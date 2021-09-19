@@ -1,15 +1,11 @@
 # OS X ABI Mach-O File Format Reference
 
-## Preamble
+**Fork 说明**：添加了目录、优化了格式，方便阅读。
 
-Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.
-
-## Table of Contens
+Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态)
 
 - [OS X ABI Mach-O File Format Reference](#os-x-abi-mach-o-file-format-reference)
-  - [Preamble](#preamble)
-  - [Table of Contens](#table-of-contens)
-- [Introduction](#introduction)
+  - [Introduction](#introduction)
   - [Basic Structure](#basic-structure)
   - [Header Structure and Load Commands](#header-structure-and-load-commands)
   - [Segments](#segments)
@@ -143,7 +139,7 @@ Preamble: I couldn't find this anywhere on Apple's developer documentation websi
       - [Fields](#fields-33)
       - [Discussion](#discussion-16)
 
-# Introduction
+## Introduction
 
 This document describes the structure of the Mach-O (Mach object) file format, which is the standard used to store programs and libraries on disk in the Mac app binary interface (ABI). To understand how the Xcode tools work with Mach-O files, and to perform low-level debugging tasks, you need to understand this information.
 
