@@ -16,128 +16,44 @@ Preamble: I couldn't find this anywhere on Apple's developer documentation websi
   - [Data Types](#data-types)
     - [Header Data Structure](#header-data-structure)
       - [`mach_header`](#mach_header)
-        - [Declaration](#declaration)
-        - [Fields](#fields)
       - [`mach_header_64`](#mach_header_64)
-        - [Declaration](#declaration-1)
-        - [Fields](#fields-1)
     - [Load Command Data Structures](#load-command-data-structures)
       - [`load_command`](#load_command)
-        - [Declaration](#declaration-2)
-        - [Fields](#fields-2)
-        - [Discussion](#discussion)
         - [Table 4: Mach-O load commands](#table-4-mach-o-load-commands)
       - [`uuid_command`](#uuid_command)
-        - [Declaration](#declaration-3)
-        - [Fields](#fields-3)
       - [`segment_command`](#segment_command)
-        - [Declaration](#declaration-4)
-        - [Fields](#fields-4)
       - [`segment_command_64`](#segment_command_64)
-        - [Declaration](#declaration-5)
-        - [Fields](#fields-5)
       - [`section`](#section)
-        - [Declaration](#declaration-6)
-        - [Fields](#fields-6)
-        - [Discussion](#discussion-1)
       - [`section_64`](#section_64)
-        - [Declaration](#declaration-7)
-        - [Fields](#fields-7)
-        - [Discussion](#discussion-2)
       - [`twolevel_hints_command`](#twolevel_hints_command)
-        - [Declaration](#declaration-8)
-        - [Fields](#fields-8)
-        - [Discussion](#discussion-3)
       - [`twolevel_hint`](#twolevel_hint)
-        - [Declaration](#declaration-9)
-        - [Fields](#fields-9)
-        - [Discussion](#discussion-4)
       - [`lc_str`](#lc_str)
-        - [Declaration](#declaration-10)
-        - [Fields](#fields-10)
-        - [Discussion](#discussion-5)
       - [`dylib`](#dylib)
-        - [Declaration](#declaration-11)
-        - [Fields](#fields-11)
       - [`dylib_command`](#dylib_command)
-        - [Declaration](#declaration-12)
-        - [Fields](#fields-12)
-        - [Discussion](#discussion-6)
       - [`dylinker_command`](#dylinker_command)
-        - [Declaration](#declaration-13)
-        - [Fields](#fields-13)
-        - [Discussion](#discussion-7)
       - [`prebound_dylib_command`](#prebound_dylib_command)
-        - [Declaration](#declaration-14)
-        - [Fields](#fields-14)
       - [`thread_command`](#thread_command)
-        - [Declaration](#declaration-15)
-        - [Fields](#fields-15)
       - [`routines_command`](#routines_command)
-        - [Declaration](#declaration-16)
-        - [Fields](#fields-16)
-        - [Discussion](#discussion-8)
       - [`routines_command_64`](#routines_command_64)
-        - [Declaration](#declaration-17)
-        - [Fields](#fields-17)
-        - [Discussion](#discussion-9)
       - [`sub_framework_command`](#sub_framework_command)
-        - [Declaration](#declaration-18)
-        - [Fields](#fields-18)
       - [`sub_umbrella_command`](#sub_umbrella_command)
-        - [Declaration](#declaration-19)
-        - [Fields](#fields-19)
       - [`sub_library_command`](#sub_library_command)
-        - [Declaration](#declaration-20)
-        - [Fields](#fields-20)
       - [`sub_client_command`](#sub_client_command)
-        - [Declaration](#declaration-21)
-        - [Fields](#fields-21)
     - [Symbol Table and Related Data Structures](#symbol-table-and-related-data-structures)
       - [`symtab_command`](#symtab_command)
-        - [Declaration](#declaration-22)
-        - [Fields](#fields-22)
-        - [Discussion](#discussion-10)
       - [`nlist`](#nlist)
-        - [Declaration](#declaration-23)
-        - [Fields](#fields-23)
-        - [Discussion](#discussion-11)
       - [`nlist_64`](#nlist_64)
-        - [Declaration](#declaration-24)
-        - [Fields](#fields-24)
-        - [Discussion](#discussion-12)
       - [`dysymtab_command`](#dysymtab_command)
-        - [Declaration](#declaration-25)
-        - [Fields](#fields-25)
-        - [Discussion](#discussion-13)
       - [`dylib_table_of_contents`](#dylib_table_of_contents)
-        - [Declaration](#declaration-26)
-        - [Fields](#fields-26)
       - [`dylib_module`](#dylib_module)
-        - [Declaration](#declaration-27)
-        - [Fields](#fields-27)
       - [`dylib_module_64`](#dylib_module_64)
-        - [Declaration](#declaration-28)
-        - [Fields](#fields-28)
       - [`dylib_reference`](#dylib_reference)
-        - [Declaration](#declaration-29)
-        - [Fields](#fields-29)
     - [Relocation Data Structures](#relocation-data-structures)
       - [`relocation_info`](#relocation_info)
-        - [Declaration](#declaration-30)
-        - [Fields](#fields-30)
       - [`scattered_relocation_info`](#scattered_relocation_info)
-        - [Declaration](#declaration-31)
-        - [Fields](#fields-31)
-        - [Discussion](#discussion-14)
   - [Universal Binaries and 32-bit/64-bit PowerPC Binaries](#universal-binaries-and-32-bit64-bit-powerpc-binaries)
     - [`fat_header`](#fat_header)
-      - [Declaration](#declaration-32)
-      - [Fields](#fields-32)
-      - [Discussion](#discussion-15)
     - [`fat_arch`](#fat_arch)
-      - [Fields](#fields-33)
-      - [Discussion](#discussion-16)
 
 ## Introduction
 
@@ -240,11 +156,11 @@ The `__TEXT` and `__DATA` segments may contain a number of standard sections
 
 Specifies the general attributes of a file. Appears at the beginning of object files targeted to 32-bit architectures. Declared in `/usr/include/mach-o/loader.h`. See also `mach_header_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct mach_header { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_t sizeofcmds;uint32_t flags; };`
 
-##### Fields
+**Fields**:
 
 `magic`
 
@@ -307,11 +223,11 @@ An integer containing a set of bit flags that indicate the state of certain opti
 
 Defines the general attributes of a file targeted for a 64-bit architecture. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct mach_header_64 { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_tsizeofcmds; uint32_t flags; uint32_t reserved; };`
 
-##### Fields
+**Fields**:
 
 `magic`
 
@@ -380,11 +296,11 @@ The load command structures are located directly after the header of the object 
 
 Contains fields that are common to all load commands.
 
-##### Declaration
+**Declaration**:
 
 `struct load_command { uint32_t cmd; uint32_t cmdsize; };`
 
-##### Fields
+**Fields**:
 
 `cmd`
 
@@ -394,7 +310,7 @@ An integer indicating the type of load command. Table 4 lists the valid load c
 
 An integer specifying the total size in bytes of the load command data structure. Each load command structure contains a different set of data, depending on the load command type, so each might have a different size. In 32-bit architectures, the size must always be a multiple of 4; in 64-bit architectures, the size must always be a multiple of 8. If the load command data does not divide evenly by 4 or 8 (depending on whether the target architecture is 32-bit or 64-bit, respectively), add bytes containing zeros to the end until it does.
 
-##### Discussion
+**Discussion**:
 
 Table 4 lists the valid load command types, with links to the full data structures for each type.
 
@@ -425,11 +341,11 @@ Table 4 lists the valid load command types, with links to the full data structu
 
 Specifies the 128-bit universally unique identifier (UUID) for an image or for its corresponding dSYM file.
 
-##### Declaration
+**Declaration**:
 
 `struct uuid_command { uint32_t cmd; uint32_t cmdsize; uint8_t uuid[16]; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -447,11 +363,11 @@ Set to `sizeof(uuid_command)`.
 
 Specifies the range of bytes in a 32-bit Mach-O file that make up a segment. Those bytes are mapped by the loader into the address space of a program. Declared in `/usr/include/mach-o/loader.h`. See also `segment_command_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct segment_command { uint32_t cmd; uint32_t cmdsize; char segname[16]; uint32_t vmaddr; uint32_t vmsize; uint32_t fileoff; uint32_tfilesize; vm_prot_t maxprot; vm_prot_t initprot; uint32_t nsects; uint32_t flags; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -504,11 +420,11 @@ Defines a set of flags that affect the loading of this segment:
 
 Specifies the range of bytes in a 64-bit Mach-O file that make up a segment. Those bytes are mapped by the loader into the address space of a program. If the 64-bit segment has sections, they are defined by `section_64` structures. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct segment_command_64 { uint32_t cmd; uint32_t cmdsize; char segname[16]; uint64_t vmaddr; uint64_t vmsize; uint64_t fileoff; uint64_tfilesize; vm_prot_t maxprot; vm_prot_t initprot; uint32_t nsects; uint32_t flags; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -561,11 +477,11 @@ Defines a set of flags that affect the loading of this segment:
 
 Defines the elements used by a 32-bit section. Directly following a `segment_command` data structure is an array of `section` data structures, with the exact count determined by the `nsects` field of the `segment_command` structure. Declared in `/usr/include/mach-o/loader.h`. See also `section_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct section { char sectname[16]; char segname[16]; uint32_t addr; uint32_t size; uint32_t offset; uint32_t align; uint32_t reloff;uint32_t nreloc; uint32_t flags; uint32_t reserved1; uint32_t reserved2; };`
 
-##### Fields
+**Fields**:
 
  `sectname`
 
@@ -636,7 +552,7 @@ An integer reserved for use with certain section types. For symbol pointer secti
 
 For sections of type `S_SYMBOL_STUBS`, an integer specifying the size (in bytes) of the symbol stub entries contained in the section. Otherwise, this field is reserved for future use and should be set to 0.
 
-##### Discussion
+**Discussion**:
 
 Each section in a Mach-O file has both a type and a set of attribute flags. In intermediate object files, the type and attributes determine how the static linker copies the sections into the final product. Object file analysis tools (such as `otool`) use the type and attributes to determine how to read and display the sections. Some section types and attributes are used by the dynamic linker.
 
@@ -650,11 +566,11 @@ These are important static-linking variants of the symbol type and attributes:
 
 Defines the elements used by a 64-bit section. Directly following a ```segment_command_64` data structure is an array of `section_64` data structures, with the exact count determined by the `nsects` field of the segment_command_64 structure. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct section_64 { char sectname[16]; char segname[16]; uint64_t addr; uint64_t size; uint32_t offset; uint32_t align; uint32_t reloff;uint32_t nreloc; uint32_t flags; uint32_t reserved1; uint32_t reserved2; };`
 
-##### Fields
+**Fields**:
 
  `sectname`
 
@@ -725,7 +641,7 @@ An integer reserved for use with certain section types. For symbol pointer secti
 
 For sections of type `S_SYMBOL_STUBS`, an integer specifying the size (in bytes) of the symbol stub entries contained in the section. Otherwise, this field is reserved for future use and should be set to 0.
 
-##### Discussion
+**Discussion**:
 
 Each section in a Mach-O file has both a type and a set of attribute flags. In intermediate object files, the type and attributes determine how the static linker copies the sections into the final product. Object file analysis tools (such as `otool`) use the type and attributes to determine how to read and display the sections. Some section types and attributes are used by the dynamic linker.
 
@@ -739,11 +655,11 @@ These are important static-linking variants of the symbol type and attributes:
 
 Defines the attributes of a `LC_TWOLEVEL_HINTS` load command. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct twolevel_hints_command { uint32_t cmd; uint32_t cmdsize; uint32_t offset; uint32_t nhints; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -761,7 +677,7 @@ An integer specifying the byte offset from the start of this file to an array of
 
 The number of `twolevel_hint` data structures located at `offset`.
 
-##### Discussion
+**Discussion**:
 
 The static linker adds the `LC_TWOLEVEL_HINTS` load command and the two-level namespace hint table to the output file when building a two-level namespace image.
 
@@ -769,11 +685,11 @@ The static linker adds the `LC_TWOLEVEL_HINTS` load command and the two-level 
 
 Specifies an entry in the two-level namespace hint table. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct twolevel_hint { uint32_t isub_image:8, itoc:24; };`
 
-##### Fields
+**Fields**:
 
  `isub_image`
 
@@ -783,7 +699,7 @@ The subimage in which the symbol is defined. It is an index into the list of ima
 
 The symbol index into the table of contents of the image specified by the `isub_image` field.
 
-##### Discussion
+**Discussion**:
 
 The two-level namespace hint table provides the dynamic linker with suggested positions to start searching for symbols in the libraries the current image is linked against.
 
@@ -797,11 +713,11 @@ By default, the linker does not include the `LC_TWOLEVEL_HINTS` command or the
 
 Defines a variable-length string. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `union lc_str { uint32_t offset; #ifndef __LP64__ char *ptr; #endif };`
 
-##### Fields
+**Fields**:
 
  `offset`
 
@@ -811,7 +727,7 @@ A long integer. A byte offset from the start of the load command that contains t
 
 A pointer to an array of bytes. At runtime, this pointer contains the virtual memory address of the string data. The `ptr` field is not used in Mach-O files.
 
-##### Discussion
+**Discussion**:
 
 Load commands store variable-length data such as library names using the `lc_str` data structure. Unless otherwise specified, the data consists of a C string.
 
@@ -821,11 +737,11 @@ The data pointed to is stored just after the load command, and the size is added
 
 Defines the data used by the dynamic linker to match a shared library against the files that have linked to it. Used exclusively in the `dylib_command` data structure. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib { union lc_str name; uint_32 timestamp; uint_32 current_version; uint_32 compatibility_version; };`
 
-##### Fields
+**Fields**:
 
  `name`
 
@@ -847,11 +763,11 @@ The compatibility version of the shared library.
 
 Defines the attributes of the `LC_LOAD_DYLIB` and `LC_ID_DYLIB` load commands. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib_command { uint_32 cmd; uint_32 cmdsize; struct dylib dylib; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -865,7 +781,7 @@ Common to all load command structures. For this structure, set to `sizeof(dylib
 
 A data structure of type `dylib`. Specifies the attributes of the shared library.
 
-##### Discussion
+**Discussion**:
 
 For each shared library that a file links against, the static linker creates an `LC_LOAD_DYLIB` command and sets its `dylib` field to the value of the `dylib` field of the `LC_ID_DYLD` load command of the target library. All the `LC_LOAD_DYLIB` commands together form a list that is ordered according to location in the file, earliest `LC_LOAD_DYLIB` command first. For two-level namespace files, undefined symbol entries in the symbol table refer to their parent shared libraries by index into this list. The index is called a *library ordinal*, and it is stored in the `n_desc` field of the `nlist` data structure.
 
@@ -877,11 +793,11 @@ The dynamic linker uses the timestamp to determine whether it can use the prebin
 
 Defines the attributes of the `LC_LOAD_DYLINKER` and `LC_ID_DYLINKER` load commands. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylinker_command { uint32_t cmd; uint32_t cmdsize; union lc_str name; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -895,7 +811,7 @@ Common to all load command structures. For this structure, set to `sizeof(dylin
 
 A data structure of type `lc_str`. Specifies the name of the dynamic linker.
 
-##### Discussion
+**Discussion**:
 
 Every executable file that is dynamically linked contains a `LC_LOAD_DYLINKER` command that specifies the name of the dynamic linker that the kernel must load in order to execute the file. The dynamic linker itself specifies its name using the `LC_ID_DYLINKER` load command.
 
@@ -903,11 +819,11 @@ Every executable file that is dynamically linked contains a `LC_LOAD_DYLINKER`�
 
 Defines the attributes of the `LC_PREBOUND_DYLIB` load command. For every library that a prebound executable file links to, the static linker adds one `LC_PREBOUND_DYLIB`command. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct prebound_dylib_command { uint32_t cmd; uint32_t cmdsize; union lc_str name; uint32_t nmodules; union lc_str linked_modules; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -933,11 +849,11 @@ A data structure of type `lc_str`. Usually, this data structure defines the off
 
 Defines the attributes of the `LC_THREAD` and `LC_UNIXTHREAD` load commands. The data of this command is specific to each architecture and appears in `thread_status.h`, located in the architecture’s directory in `/usr/include/mach`. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct thread_command { uint32_t cmd; uint32_t cmdsize; /* uint32_t flavor;*/ /* uint32_t count; */ /* struct cpu_thread_state state;*/ };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -959,11 +875,11 @@ Size of the thread state data, in number of 32-bit integers. The thread state da
 
 Defines the attributes of the `LC_ROUTINES` load command, used in 32-bit architectures. Describes the location of the shared library initialization function, which is a function that the dynamic linker calls before allowing any of the routines in the library to be called. Declared in `/usr/include/mach-o/loader.h`. See also `routines_command_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct routines_command { uint32_t cmd; uint32_t cmdsize; uint32_t init_address; uint32_t init_module; uint32_t reserved1; uint32_treserved2; uint32_t reserved3; uint32_t reserved4; uint32_t reserved5; uint32_t reserved6; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1005,7 +921,7 @@ Reserved for future use. Set this field to `0`.
 
 Reserved for future use. Set this field to `0`.
 
-##### Discussion
+**Discussion**:
 
 The static linker adds an `LC_ROUTINES` command when you specify a shared library initialization function using the `-init` option (see the `ld` man page for more information).
 
@@ -1013,11 +929,11 @@ The static linker adds an `LC_ROUTINES` command when you specify a shared libr
 
 Defines the attributes of the `LC_ROUTINES_64` load command, used in 64-bit architectures. Describes the location of the shared library initialization function, which is a function that the dynamic linker calls before allowing any of the routines in the library to be called. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct routines_command_64 { uint32_t cmd; uint32_t cmdsize; uint64_t init_address; uint64_t init_module; uint64_t reserved1; uint64_treserved2; uint64_t reserved3; uint64_t reserved4; uint64_t reserved5; uint64_t reserved6; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1059,7 +975,7 @@ Reserved for future use. Set this field to `0`.
 
 Reserved for future use. Set this field to `0`.
 
-##### Discussion
+**Discussion**:
 
 The static linker adds an `LC_ROUTINES_64` command when you specify a shared library initialization function using the `-init` option (see the `ld` man page for more information).
 
@@ -1067,11 +983,11 @@ The static linker adds an `LC_ROUTINES_64` command when you specify a shared l
 
 Defines the attributes of the `LC_SUB_FRAMEWORK` load command. Identifies the umbrella framework of which this file is a subframework. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct sub_framework_command { uint32_t cmd; uint32_t cmdsize; union lc_str umbrella; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1089,11 +1005,11 @@ A data structure of type `lc_str`. Specifies the name of the umbrella framework
 
 Defines the attributes of the `LC_SUB_UMBRELLA` load command. Identifies the named framework as a subumbrella of this framework. Unlike a subframework, any client may link to a subumbrella. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct sub_umbrella_command { uint32_t cmd; uint32_t cmdsize; union lc_str sub_umbrella; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1111,11 +1027,11 @@ A data structure of type `lc_str`. Specifies the name of the umbrella framework
 
 Defines the attributes of the `LC_SUB_LIBRARY` load command. Identifies a sublibrary of this framework and marks this framework as an umbrella framework. Unlike a subframework, any client may link to a sublibrary. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct sub_library_command { uint32_t cmd; uint32_t cmdsize; union lc_str sub_library; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1133,11 +1049,11 @@ A data structure of type `lc_str`. Specifies the name of the sublibrary of whic
 
 Defines the attributes of the `LC_SUB_CLIENT` load command. Specifies the name of a file that is allowed to link to this subframework. This file would otherwise be required to link to the umbrella framework of which this file is a component. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct sub_client_command { uint32_t cmd; uint32_t cmdsize; union lc_str client; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1159,11 +1075,11 @@ Two load commands, `LC_SYMTAB` and `LC_DYSYMTAB`, describe the size and locat
 
 Defines the attributes of the `LC_SYMTAB` load command. Describes the size and location of the symbol table data structures. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct symtab_command { uint_32 cmd; uint_32 cmdsize; uint_32 symoff; uint_32 nsyms; uint_32 stroff; uint_32 strsize; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1189,7 +1105,7 @@ An integer containing the byte offset from the start of the image to the locatio
 
 An integer indicating the size (in bytes) of the string table.
 
-##### Discussion
+**Discussion**:
 
 `LC_SYMTAB` should exist in both statically linked and dynamically linked file types.
 
@@ -1197,11 +1113,11 @@ An integer indicating the size (in bytes) of the string table.
 
 Describes an entry in the symbol table for 32-bit architectures. Declared in `/usr/include/mach-o/nlist.h`. See also `nlist_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct nlist { union { #ifndef __LP64__ char *n_name; #endif int32_t n_strx; } n_un; uint8_t n_type; uint8_t n_sect; int16_t n_desc;uint32_t n_value; };`
 
-##### Fields
+**Fields**:
 
  `n_un`
 
@@ -1253,7 +1169,7 @@ If this file is a two-level namespace image (that is, if the `MH_TWOLEVEL` fla
 
 An integer that contains the value of the symbol. The format of this value is different for each type of symbol table entry (as specified by the `n_type` field). For the `N_SECT` symbol type, `n_value` is the address of the symbol. See the description of the `n_type` field for information on other possible values.
 
-##### Discussion
+**Discussion**:
 
 Common symbols must be of type `N_UNDF` and must have the `N_EXT` bit set. The `n_value` for a common symbol is the size (in bytes) of the data of the symbol. In C, a common symbol is a variable that is declared but not initialized in this file. Common symbols can appear only in `MH_OBJECT` Mach-O files.
 
@@ -1261,11 +1177,11 @@ Common symbols must be of type `N_UNDF` and must have the `N_EXT` bit set. T
 
 Describes an entry in the symbol table for 64-bit architectures. Declared in `/usr/include/mach-o/nlist.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct nlist_64 { union { uint32_t n_strx; } n_un; uint8_t n_type; uint8_t n_sect; uint16_t n_desc; uint64_t n_value; };`
 
-##### Fields
+**Fields**:
 
  `n_un`
 
@@ -1316,7 +1232,7 @@ If this file is a two-level namespace image (that is, if the `MH_TWOLEVEL` fla
 
 An integer that contains the value of the symbol. The format of this value is different for each type of symbol table entry (as specified by the `n_type` field). For the `N_SECT` symbol type, `n_value` is the address of the symbol. See the description of the `n_type` field for information on other possible values.
 
-##### Discussion
+**Discussion**:
 
 See discussion in `nlist`.
 
@@ -1324,11 +1240,11 @@ See discussion in `nlist`.
 
 The data structure for the `LC_DYSYMTAB` load command. It describes the sizes and locations of the parts of the symbol table used for dynamic linking. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dysymtab_command { uint32_t cmd; uint32_t cmdsize; uint32_t ilocalsym; uint32_t nlocalsym; uint32_t iextdefsym; uint32_t nextdefsym;uint32_t iundefsym; uint32_t nundefsym; uint32_t tocoff; uint32_t ntoc; uint32_t modtaboff; uint32_t nmodtab; uint32_t extrefsymoff;uint32_t nextrefsyms; uint32_t indirectsymoff; uint32_t nindirectsyms; uint32_t extreloff; uint32_t nextrel; uint32_t locreloff; uint32_tnlocrel; };`
 
-##### Fields
+**Fields**:
 
  `cmd`
 
@@ -1410,7 +1326,7 @@ An integer indicating the byte offset from the start of the file to the local re
 
 An integer indicating the number of entries in the local relocation table.
 
-##### Discussion
+**Discussion**:
 
 The `LC_DYSYMTAB` load command contains a set of indexes into the symbol table and a set of file offsets that define the location of several other tables. Fields for tables not used in the file should be set to 0. These tables are described in “[Position-Independent Code](https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/MachOTopics/1-Articles/dynamic_code.html#//apple_ref/doc/uid/TP40002528)” in *Mach-O Programming Topics*.
 
@@ -1418,11 +1334,11 @@ The `LC_DYSYMTAB` load command contains a set of indexes into the symbol table
 
 Describes an entry in the table of contents of a dynamic shared library. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib_table_of_contents { uint32_t symbol_index; uint32_t module_index; };`
 
-##### Fields
+**Fields**:
 
  `symbol_index`
 
@@ -1436,11 +1352,11 @@ An index into the module table indicating the module in which this defined exter
 
 Describes a module table entry for a dynamic shared library for 32-bit architectures. Declared in `/usr/include/mach-o/loader.h`. See also `dylib_module_64`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib_module { uint32_t module_name; uint32_t iextdefsym; uint32_t nextdefsym; uint32_t irefsym; uint32_t nrefsym; uint32_tilocalsym; uint32_t nlocalsym; uint32_t iextrel; uint32_t nextrel; uint32_t iinit_iterm; uint32_t ninit_nterm; uint32_tobjc_module_info_addr; uint32_t objc_module_info_size; };`
 
-##### Fields
+**Fields**:
 
  `module_name`
 
@@ -1498,11 +1414,11 @@ The number of bytes of data for this module that are used in the `__module_info
 
 Describes a module table entry for a dynamic shared library for 64-bit architectures. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib_module_64 { uint32_t module_name; uint32_t iextdefsym; uint32_t nextdefsym; uint32_t irefsym; uint32_t nrefsym; uint32_tilocalsym; uint32_t nlocalsym; uint32_t iextrel; uint32_t nextrel; uint32_t iinit_iterm; uint32_t ninit_nterm; uint32_tobjc_module_info_size; uint64_t objc_module_info_addr; };`
 
-##### Fields
+**Fields**:
 
  `module_name`
 
@@ -1560,11 +1476,11 @@ The number of bytes of data for this module that are used in the `__module_info
 
 Defines the attributes of an external reference table entry for the external reference entries provided by a module in a shared library. Declared in `/usr/include/mach-o/loader.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct dylib_reference { uint32_t isym:24, flags:8; };`
 
-##### Fields
+**Fields**:
 
  `isym`
 
@@ -1584,7 +1500,7 @@ NoteIn the OS X x86-64 environment scattered relocations are not used. Compiler-
 
 Describes an item in the file that uses an address that needs to be updated when the address is changed. Declared in `/usr/include/mach-o/reloc.h`.
 
-##### Declaration
+**Declaration**:
 
 ```c
 struct relocation_info {
@@ -1593,7 +1509,7 @@ struct relocation_info {
 };
 ```
 
-##### Fields
+**Fields**:
 
  `r_address`
 
@@ -1669,11 +1585,11 @@ For PowerPC environments, the `r_type` field is usually `PPC_RELOC_VANILLA` 
 
 Describes an item in the file—using a nonzero constant in its relocatable expression or two addresses in its relocatable expression—that needs to be updated if the addresses that it uses are changed. This information is needed to reconstruct the addresses that make up the relocatable expression’s value in order to change the addresses independently of each other. Declared in `/usr/include/mach-o/reloc.h`.
 
-##### Declaration
+**Declaration**:
 
 `struct scattered_relocation_info { #ifdef __BIG_ENDIAN__ uint32_t r_scattered:1, r_pcrel:1, r_length:2, r_type:4, r_address:24; int32_t r_value;#endif /* __BIG_ENDIAN__ */ #ifdef __LITTLE_ENDIAN__ uint32_t r_address:24, r_type:4, r_length:2, r_pcrel:1, r_scattered:1; int32_t r_value; #endif /* __LITTLE_ENDIAN__ */ };`
 
-##### Fields
+**Fields**:
 
  `r_scattered`
 
@@ -1705,7 +1621,7 @@ Indicates the type of relocation to be performed. Possible values for this field
 
 The address of the relocatable expression for the item in the file that needs to be updated if the address is changed. For relocatable expressions with the difference of two section addresses, the address from which to subtract (in mathematical terms, the minuend) is contained in the first relocation entry and the address to subtract (the subtrahend) is contained in the second relocation entry.
 
-##### Discussion
+**Discussion**:
 
 Mach-O relocation data structures support two types of relocatable expressions in machine code and data:
 
@@ -1729,11 +1645,11 @@ A binary that contains code for more than one architecture always begins with a 
 
 Defines the layout of a binary that contains code for more than one architecture. Declared in the header `/usr/include/mach-o/fat.h`.
 
-#### Declaration
+**Declaration**:
 
 `struct fat_header { uint32_t magic; uint32_t nfat_arch; };`
 
-#### Fields
+**Fields**:
 
 `magic`
 
@@ -1741,7 +1657,7 @@ An integer containing the value 0xCAFEBABE in big-endian byte order format. On a
 
 `nfat_arch`
 
-#### Discussion
+**Discussion**:
 
 The fat_header data structure is placed at the start of a binary that contains code for multiple architectures. Directly following the fat_header data structure is a set of `fat_arch` data structures, one for each architecture included in the binary. Regardless of the content this data structure describes, all its fields are stored in big-endian byte order.
 
@@ -1760,7 +1676,7 @@ struct fat_arch
 };
 ```
 
-#### Fields
+**Fields**:
 
 `cputype`
 
@@ -1782,6 +1698,6 @@ Size of the data for this CPU.
 
 The power of 2 alignment for the offset of the object file for the architecture specified in cputype within the binary. This is required to ensure that, if this binary is changed, the contents it retains are correctly aligned for virtual memory paging and other uses.
 
-#### Discussion
+**Discussion**:
 
 An array of `fat_arch` data structures appears directly after the `fat_header` data structure of a binary that contains object files for multiple architectures. Regardless of the content this data structure describes, all its fields are stored in big-endian byte order.
