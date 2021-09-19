@@ -2,7 +2,7 @@
 
 **Fork 说明**：添加了目录、优化了格式，方便阅读。
 
-Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态)
+Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态，[2021-04-13，GitHub 中的 .md 文件已自带目录](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/))
 
 - [OS X ABI Mach-O File Format Reference](#os-x-abi-mach-o-file-format-reference)
   - [Introduction](#introduction)
@@ -158,7 +158,21 @@ Specifies the general attributes of a file. Appears at the beginning of object f
 
 **Declaration**:
 
-`struct mach_header { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_t sizeofcmds;uint32_t flags; };`
+```c
+/*
+ * The 32-bit mach header appears at the very beginning of the object file for
+ * 32-bit architectures.
+ */
+struct mach_header {
+	uint32_t	magic;		/* mach magic number identifier */
+	cpu_type_t	cputype;	/* cpu specifier */
+	cpu_subtype_t	cpusubtype;	/* machine specifier */
+	uint32_t	filetype;	/* type of file */
+	uint32_t	ncmds;		/* number of load commands */
+	uint32_t	sizeofcmds;	/* the size of all the load commands */
+	uint32_t	flags;		/* flags */
+};
+```
 
 **Fields**:
 
@@ -225,7 +239,22 @@ Defines the general attributes of a file targeted for a 64-bit architecture. Dec
 
 **Declaration**:
 
-`struct mach_header_64 { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_tsizeofcmds; uint32_t flags; uint32_t reserved; };`
+```c
+/*
+ * The 64-bit mach header appears at the very beginning of object files for
+ * 64-bit architectures.
+ */
+struct mach_header_64 {
+	uint32_t	magic;		/* mach magic number identifier */
+	cpu_type_t	cputype;	/* cpu specifier */
+	cpu_subtype_t	cpusubtype;	/* machine specifier */
+	uint32_t	filetype;	/* type of file */
+	uint32_t	ncmds;		/* number of load commands */
+	uint32_t	sizeofcmds;	/* the size of all the load commands */
+	uint32_t	flags;		/* flags */
+	uint32_t	reserved;	/* reserved */
+};
+```
 
 **Fields**:
 
@@ -298,7 +327,29 @@ Contains fields that are common to all load commands.
 
 **Declaration**:
 
-`struct load_command { uint32_t cmd; uint32_t cmdsize; };`
+```c
+/*
+ * The load commands directly follow the mach_header.  The total size of all
+ * of the commands is given by the sizeofcmds field in the mach_header.  All
+ * load commands must have as their first two fields cmd and cmdsize.  The cmd
+ * field is filled in with a constant for that command type.  Each command type
+ * has a structure specifically for it.  The cmdsize field is the size in bytes
+ * of the particular load command structure plus anything that follows it that
+ * is a part of the load command (i.e. section structures, strings, etc.).  To
+ * advance to the next load command the cmdsize can be added to the offset or
+ * pointer of the current load command.  The cmdsize for 32-bit architectures
+ * MUST be a multiple of 4 bytes and for 64-bit architectures MUST be a multiple
+ * of 8 bytes (these are forever the maximum alignment of any load commands).
+ * The padded bytes must be zero.  All tables in the object file must also
+ * follow these rules so the file can be memory mapped.  Otherwise the pointers
+ * to these tables will not work well or at all on some machines.  With all
+ * padding zeroed like objects will compare byte for byte.
+ */
+struct load_command {
+	uint32_t cmd;		/* type of load command */
+	uint32_t cmdsize;	/* total size of command in bytes */
+};
+```
 
 **Fields**:
 
@@ -343,7 +394,17 @@ Specifies the 128-bit universally unique identifier (UUID) for an image or for i
 
 **Declaration**:
 
-`struct uuid_command { uint32_t cmd; uint32_t cmdsize; uint8_t uuid[16]; };`
+```c
+/*
+ * The uuid load command contains a single 128-bit unique random number that
+ * identifies an object produced by the static link editor.
+ */
+struct uuid_command {
+    uint32_t	cmd;		/* LC_UUID */
+    uint32_t	cmdsize;	/* sizeof(struct uuid_command) */
+    uint8_t	uuid[16];	/* the 128-bit uuid */
+};
+```
 
 **Fields**:
 
@@ -365,7 +426,33 @@ Specifies the range of bytes in a 32-bit Mach-O file that make up a segment. Tho
 
 **Declaration**:
 
-`struct segment_command { uint32_t cmd; uint32_t cmdsize; char segname[16]; uint32_t vmaddr; uint32_t vmsize; uint32_t fileoff; uint32_tfilesize; vm_prot_t maxprot; vm_prot_t initprot; uint32_t nsects; uint32_t flags; };`
+```c
+/*
+ * The segment load command indicates that a part of this file is to be
+ * mapped into the task's address space.  The size of this segment in memory,
+ * vmsize, maybe equal to or larger than the amount to map from this file,
+ * filesize.  The file is mapped starting at fileoff to the beginning of
+ * the segment in memory, vmaddr.  The rest of the memory of the segment,
+ * if any, is allocated zero fill on demand.  The segment's maximum virtual
+ * memory protection and initial virtual memory protection are specified
+ * by the maxprot and initprot fields.  If the segment has sections then the
+ * section structures directly follow the segment command and their size is
+ * reflected in cmdsize.
+ */
+struct segment_command { /* for 32-bit architectures */
+	uint32_t	cmd;		/* LC_SEGMENT */
+	uint32_t	cmdsize;	/* includes sizeof section structs */
+	char		segname[16];	/* segment name */
+	uint32_t	vmaddr;		/* memory address of this segment */
+	uint32_t	vmsize;		/* memory size of this segment */
+	uint32_t	fileoff;	/* file offset of this segment */
+	uint32_t	filesize;	/* amount to map from the file */
+	vm_prot_t	maxprot;	/* maximum VM protection */
+	vm_prot_t	initprot;	/* initial VM protection */
+	uint32_t	nsects;		/* number of sections in segment */
+	uint32_t	flags;		/* flags */
+};
+```
 
 **Fields**:
 
@@ -422,7 +509,27 @@ Specifies the range of bytes in a 64-bit Mach-O file that make up a segment. Tho
 
 **Declaration**:
 
-`struct segment_command_64 { uint32_t cmd; uint32_t cmdsize; char segname[16]; uint64_t vmaddr; uint64_t vmsize; uint64_t fileoff; uint64_tfilesize; vm_prot_t maxprot; vm_prot_t initprot; uint32_t nsects; uint32_t flags; };`
+```c
+/*
+ * The 64-bit segment load command indicates that a part of this file is to be
+ * mapped into a 64-bit task's address space.  If the 64-bit segment has
+ * sections then section_64 structures directly follow the 64-bit segment
+ * command and their size is reflected in cmdsize.
+ */
+struct segment_command_64 { /* for 64-bit architectures */
+	uint32_t	cmd;		/* LC_SEGMENT_64 */
+	uint32_t	cmdsize;	/* includes sizeof section_64 structs */
+	char		segname[16];	/* segment name */
+	uint64_t	vmaddr;		/* memory address of this segment */
+	uint64_t	vmsize;		/* memory size of this segment */
+	uint64_t	fileoff;	/* file offset of this segment */
+	uint64_t	filesize;	/* amount to map from the file */
+	vm_prot_t	maxprot;	/* maximum VM protection */
+	vm_prot_t	initprot;	/* initial VM protection */
+	uint32_t	nsects;		/* number of sections in segment */
+	uint32_t	flags;		/* flags */
+};
+```
 
 **Fields**:
 
@@ -479,7 +586,48 @@ Defines the elements used by a 32-bit section. Directly following a `segment_co
 
 **Declaration**:
 
-`struct section { char sectname[16]; char segname[16]; uint32_t addr; uint32_t size; uint32_t offset; uint32_t align; uint32_t reloff;uint32_t nreloc; uint32_t flags; uint32_t reserved1; uint32_t reserved2; };`
+```c
+/*
+ * A segment is made up of zero or more sections.  Non-MH_OBJECT files have
+ * all of their segments with the proper sections in each, and padded to the
+ * specified segment alignment when produced by the link editor.  The first
+ * segment of a MH_EXECUTE and MH_FVMLIB format file contains the mach_header
+ * and load commands of the object file before its first section.  The zero
+ * fill sections are always last in their segment (in all formats).  This
+ * allows the zeroed segment padding to be mapped into memory where zero fill
+ * sections might be. The gigabyte zero fill sections, those with the section
+ * type S_GB_ZEROFILL, can only be in a segment with sections of this type.
+ * These segments are then placed after all other segments.
+ *
+ * The MH_OBJECT format has all of its sections in one segment for
+ * compactness.  There is no padding to a specified segment boundary and the
+ * mach_header and load commands are not part of the segment.
+ *
+ * Sections with the same section name, sectname, going into the same segment,
+ * segname, are combined by the link editor.  The resulting section is aligned
+ * to the maximum alignment of the combined sections and is the new section's
+ * alignment.  The combined sections are aligned to their original alignment in
+ * the combined section.  Any padded bytes to get the specified alignment are
+ * zeroed.
+ *
+ * The format of the relocation entries referenced by the reloff and nreloc
+ * fields of the section structure for mach object files is described in the
+ * header file <reloc.h>.
+ */
+struct section { /* for 32-bit architectures */
+	char		sectname[16];	/* name of this section */
+	char		segname[16];	/* segment this section goes in */
+	uint32_t	addr;		/* memory address of this section */
+	uint32_t	size;		/* size in bytes of this section */
+	uint32_t	offset;		/* file offset of this section */
+	uint32_t	align;		/* section alignment (power of 2) */
+	uint32_t	reloff;		/* file offset of relocation entries */
+	uint32_t	nreloc;		/* number of relocation entries */
+	uint32_t	flags;		/* flags (section type and attributes)*/
+	uint32_t	reserved1;	/* reserved (for offset or index) */
+	uint32_t	reserved2;	/* reserved (for count or sizeof) */
+};
+```
 
 **Fields**:
 
@@ -568,7 +716,22 @@ Defines the elements used by a 64-bit section. Directly following a ```segment_
 
 **Declaration**:
 
-`struct section_64 { char sectname[16]; char segname[16]; uint64_t addr; uint64_t size; uint32_t offset; uint32_t align; uint32_t reloff;uint32_t nreloc; uint32_t flags; uint32_t reserved1; uint32_t reserved2; };`
+```c
+struct section_64 { /* for 64-bit architectures */
+	char		sectname[16];	/* name of this section */
+	char		segname[16];	/* segment this section goes in */
+	uint64_t	addr;		/* memory address of this section */
+	uint64_t	size;		/* size in bytes of this section */
+	uint32_t	offset;		/* file offset of this section */
+	uint32_t	align;		/* section alignment (power of 2) */
+	uint32_t	reloff;		/* file offset of relocation entries */
+	uint32_t	nreloc;		/* number of relocation entries */
+	uint32_t	flags;		/* flags (section type and attributes)*/
+	uint32_t	reserved1;	/* reserved (for offset or index) */
+	uint32_t	reserved2;	/* reserved (for count or sizeof) */
+	uint32_t	reserved3;	/* reserved */
+};
+```
 
 **Fields**:
 
@@ -657,7 +820,18 @@ Defines the attributes of a `LC_TWOLEVEL_HINTS` load command. Declared in `/u
 
 **Declaration**:
 
-`struct twolevel_hints_command { uint32_t cmd; uint32_t cmdsize; uint32_t offset; uint32_t nhints; };`
+```c
+/*
+ * The twolevel_hints_command contains the offset and number of hints in the
+ * two-level namespace lookup hints table.
+ */
+struct twolevel_hints_command {
+    uint32_t cmd;	/* LC_TWOLEVEL_HINTS */
+    uint32_t cmdsize;	/* sizeof(struct twolevel_hints_command) */
+    uint32_t offset;	/* offset to the hint table */
+    uint32_t nhints;	/* number of hints in the hint table */
+};
+```
 
 **Fields**:
 
@@ -687,7 +861,29 @@ Specifies an entry in the two-level namespace hint table. Declared in `/usr/inc
 
 **Declaration**:
 
-`struct twolevel_hint { uint32_t isub_image:8, itoc:24; };`
+```c
+/*
+ * The entries in the two-level namespace lookup hints table are twolevel_hint
+ * structs.  These provide hints to the dynamic link editor where to start
+ * looking for an undefined symbol in a two-level namespace image.  The
+ * isub_image field is an index into the sub-images (sub-frameworks and
+ * sub-umbrellas list) that made up the two-level image that the undefined
+ * symbol was found in when it was built by the static link editor.  If
+ * isub-image is 0 the the symbol is expected to be defined in library and not
+ * in the sub-images.  If isub-image is non-zero it is an index into the array
+ * of sub-images for the umbrella with the first index in the sub-images being
+ * 1. The array of sub-images is the ordered list of sub-images of the umbrella
+ * that would be searched for a symbol that has the umbrella recorded as its
+ * primary library.  The table of contents index is an index into the
+ * library's table of contents.  This is used as the starting point of the
+ * binary search or a directed linear search.
+ */
+struct twolevel_hint {
+	uint32_t 
+	isub_image:8,	/* index into the sub images */
+	itoc:24;	/* index into the table of contents */
+};
+```
 
 **Fields**:
 
@@ -715,7 +911,22 @@ Defines a variable-length string. Declared in `/usr/include/mach-o/loader.h`.
 
 **Declaration**:
 
-`union lc_str { uint32_t offset; #ifndef __LP64__ char *ptr; #endif };`
+```c
+/*
+ * A variable length string in a load command is represented by an lc_str
+ * union.  The strings are stored just after the load command structure and
+ * the offset is from the start of the load command structure.  The size
+ * of the string is reflected in the cmdsize field of the load command.
+ * Once again any padded bytes to bring the cmdsize field to a multiple
+ * of 4 bytes must be zero.
+ */
+union lc_str {
+	uint32_t	offset;	/* offset to the string */
+#ifndef __LP64__
+	char		*ptr;	/* pointer to the string */
+#endif 
+};
+```
 
 **Fields**:
 
@@ -739,7 +950,23 @@ Defines the data used by the dynamic linker to match a shared library against th
 
 **Declaration**:
 
-`struct dylib { union lc_str name; uint_32 timestamp; uint_32 current_version; uint_32 compatibility_version; };`
+```c
+/*
+ * Dynamicly linked shared libraries are identified by two things.  The
+ * pathname (the name of the library as found for execution), and the
+ * compatibility version number.  The pathname must match and the compatibility
+ * number in the user of the library must be greater than or equal to the
+ * library being used.  The time stamp is used to record the time a library was
+ * built and copied into user so it can be use to determined if the library used
+ * at runtime is exactly the same as used to built the program.
+ */
+struct dylib {
+    union lc_str  name;			/* library's path name */
+    uint32_t timestamp;			/* library's build time stamp */
+    uint32_t current_version;		/* library's current version number */
+    uint32_t compatibility_version;	/* library's compatibility vers number*/
+};
+```
 
 **Fields**:
 
@@ -765,7 +992,21 @@ Defines the attributes of the `LC_LOAD_DYLIB` and `LC_ID_DYLIB` load command
 
 **Declaration**:
 
-`struct dylib_command { uint_32 cmd; uint_32 cmdsize; struct dylib dylib; };`
+```c
+/*
+ * A dynamically linked shared library (filetype == MH_DYLIB in the mach header)
+ * contains a dylib_command (cmd == LC_ID_DYLIB) to identify the library.
+ * An object that uses a dynamically linked shared library also contains a
+ * dylib_command (cmd == LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, or
+ * LC_REEXPORT_DYLIB) for each library it uses.
+ */
+struct dylib_command {
+	uint32_t	cmd;		/* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB,
+					   LC_REEXPORT_DYLIB */
+	uint32_t	cmdsize;	/* includes pathname string */
+	struct dylib	dylib;		/* the library identification */
+};
+```
 
 **Fields**:
 
@@ -795,7 +1036,22 @@ Defines the attributes of the `LC_LOAD_DYLINKER` and `LC_ID_DYLINKER` load c
 
 **Declaration**:
 
-`struct dylinker_command { uint32_t cmd; uint32_t cmdsize; union lc_str name; };`
+```c
+/*
+ * A program that uses a dynamic linker contains a dylinker_command to identify
+ * the name of the dynamic linker (LC_LOAD_DYLINKER).  And a dynamic linker
+ * contains a dylinker_command to identify the dynamic linker (LC_ID_DYLINKER).
+ * A file can have at most one of these.
+ * This struct is also used for the LC_DYLD_ENVIRONMENT load command and
+ * contains string for dyld to treat like environment variable.
+ */
+struct dylinker_command {
+	uint32_t	cmd;		/* LC_ID_DYLINKER, LC_LOAD_DYLINKER or
+					   LC_DYLD_ENVIRONMENT */
+	uint32_t	cmdsize;	/* includes pathname string */
+	union lc_str    name;		/* dynamic linker's path name */
+};
+```
 
 **Fields**:
 
@@ -821,7 +1077,24 @@ Defines the attributes of the `LC_PREBOUND_DYLIB` load command. For every libr
 
 **Declaration**:
 
-`struct prebound_dylib_command { uint32_t cmd; uint32_t cmdsize; union lc_str name; uint32_t nmodules; union lc_str linked_modules; };`
+```c
+/*
+ * A program (filetype == MH_EXECUTE) that is
+ * prebound to its dynamic libraries has one of these for each library that
+ * the static linker used in prebinding.  It contains a bit vector for the
+ * modules in the library.  The bits indicate which modules are bound (1) and
+ * which are not (0) from the library.  The bit for module 0 is the low bit
+ * of the first byte.  So the bit for the Nth module is:
+ * (linked_modules[N/8] >> N%8) & 1
+ */
+struct prebound_dylib_command {
+	uint32_t	cmd;		/* LC_PREBOUND_DYLIB */
+	uint32_t	cmdsize;	/* includes strings */
+	union lc_str	name;		/* library's path name */
+	uint32_t	nmodules;	/* number of modules in library */
+	union lc_str	linked_modules;	/* bit vector of linked modules */
+};
+```
 
 **Fields**:
 
@@ -851,7 +1124,37 @@ Defines the attributes of the `LC_THREAD` and `LC_UNIXTHREAD` load commands.
 
 **Declaration**:
 
-`struct thread_command { uint32_t cmd; uint32_t cmdsize; /* uint32_t flavor;*/ /* uint32_t count; */ /* struct cpu_thread_state state;*/ };`
+```c
+/*
+ * Thread commands contain machine-specific data structures suitable for
+ * use in the thread state primitives.  The machine specific data structures
+ * follow the struct thread_command as follows.
+ * Each flavor of machine specific data structure is preceded by an uint32_t
+ * constant for the flavor of that data structure, an uint32_t that is the
+ * count of uint32_t's of the size of the state data structure and then
+ * the state data structure follows.  This triple may be repeated for many
+ * flavors.  The constants for the flavors, counts and state data structure
+ * definitions are expected to be in the header file <machine/thread_status.h>.
+ * These machine specific data structures sizes must be multiples of
+ * 4 bytes.  The cmdsize reflects the total size of the thread_command
+ * and all of the sizes of the constants for the flavors, counts and state
+ * data structures.
+ *
+ * For executable objects that are unix processes there will be one
+ * thread_command (cmd == LC_UNIXTHREAD) created for it by the link-editor.
+ * This is the same as a LC_THREAD, except that a stack is automatically
+ * created (based on the shell's limit for the stack size).  Command arguments
+ * and environment variables are copied onto that stack.
+ */
+struct thread_command {
+	uint32_t	cmd;		/* LC_THREAD or  LC_UNIXTHREAD */
+	uint32_t	cmdsize;	/* total size of this command */
+	/* uint32_t flavor		   flavor of thread state */
+	/* uint32_t count		   count of uint32_t's in thread state */
+	/* struct XXX_thread_state state   thread state for this flavor */
+	/* ... */
+};
+```
 
 **Fields**:
 
@@ -877,7 +1180,29 @@ Defines the attributes of the `LC_ROUTINES` load command, used in 32-bit archi
 
 **Declaration**:
 
-`struct routines_command { uint32_t cmd; uint32_t cmdsize; uint32_t init_address; uint32_t init_module; uint32_t reserved1; uint32_treserved2; uint32_t reserved3; uint32_t reserved4; uint32_t reserved5; uint32_t reserved6; };`
+```c
+/*
+ * The routines command contains the address of the dynamic shared library 
+ * initialization routine and an index into the module table for the module
+ * that defines the routine.  Before any modules are used from the library the
+ * dynamic linker fully binds the module that defines the initialization routine
+ * and then calls it.  This gets called before any module initialization
+ * routines (used for C++ static constructors) in the library.
+ */
+struct routines_command { /* for 32-bit architectures */
+	uint32_t	cmd;		/* LC_ROUTINES */
+	uint32_t	cmdsize;	/* total size of this command */
+	uint32_t	init_address;	/* address of initialization routine */
+	uint32_t	init_module;	/* index into the module table that */
+				        /*  the init routine is defined in */
+	uint32_t	reserved1;
+	uint32_t	reserved2;
+	uint32_t	reserved3;
+	uint32_t	reserved4;
+	uint32_t	reserved5;
+	uint32_t	reserved6;
+};
+```
 
 **Fields**:
 
@@ -931,7 +1256,24 @@ Defines the attributes of the `LC_ROUTINES_64` load command, used in 64-bit ar
 
 **Declaration**:
 
-`struct routines_command_64 { uint32_t cmd; uint32_t cmdsize; uint64_t init_address; uint64_t init_module; uint64_t reserved1; uint64_treserved2; uint64_t reserved3; uint64_t reserved4; uint64_t reserved5; uint64_t reserved6; };`
+```c
+/*
+ * The 64-bit routines command.  Same use as above.
+ */
+struct routines_command_64 { /* for 64-bit architectures */
+	uint32_t	cmd;		/* LC_ROUTINES_64 */
+	uint32_t	cmdsize;	/* total size of this command */
+	uint64_t	init_address;	/* address of initialization routine */
+	uint64_t	init_module;	/* index into the module table that */
+					/*  the init routine is defined in */
+	uint64_t	reserved1;
+	uint64_t	reserved2;
+	uint64_t	reserved3;
+	uint64_t	reserved4;
+	uint64_t	reserved5;
+	uint64_t	reserved6;
+};
+```
 
 **Fields**:
 
@@ -985,7 +1327,23 @@ Defines the attributes of the `LC_SUB_FRAMEWORK` load command. Identifies the 
 
 **Declaration**:
 
-`struct sub_framework_command { uint32_t cmd; uint32_t cmdsize; union lc_str umbrella; };`
+```c
+/*
+ * A dynamically linked shared library may be a subframework of an umbrella
+ * framework.  If so it will be linked with "-umbrella umbrella_name" where
+ * Where "umbrella_name" is the name of the umbrella framework. A subframework
+ * can only be linked against by its umbrella framework or other subframeworks
+ * that are part of the same umbrella framework.  Otherwise the static link
+ * editor produces an error and states to link against the umbrella framework.
+ * The name of the umbrella framework for subframeworks is recorded in the
+ * following structure.
+ */
+struct sub_framework_command {
+	uint32_t	cmd;		/* LC_SUB_FRAMEWORK */
+	uint32_t	cmdsize;	/* includes umbrella string */
+	union lc_str 	umbrella;	/* the umbrella framework name */
+};
+```
 
 **Fields**:
 
@@ -1007,7 +1365,26 @@ Defines the attributes of the `LC_SUB_UMBRELLA` load command. Identifies the n
 
 **Declaration**:
 
-`struct sub_umbrella_command { uint32_t cmd; uint32_t cmdsize; union lc_str sub_umbrella; };`
+```c
+/*
+ * A dynamically linked shared library may be a sub_umbrella of an umbrella
+ * framework.  If so it will be linked with "-sub_umbrella umbrella_name" where
+ * Where "umbrella_name" is the name of the sub_umbrella framework.  When
+ * staticly linking when -twolevel_namespace is in effect a twolevel namespace 
+ * umbrella framework will only cause its subframeworks and those frameworks
+ * listed as sub_umbrella frameworks to be implicited linked in.  Any other
+ * dependent dynamic libraries will not be linked it when -twolevel_namespace
+ * is in effect.  The primary library recorded by the static linker when
+ * resolving a symbol in these libraries will be the umbrella framework.
+ * Zero or more sub_umbrella frameworks may be use by an umbrella framework.
+ * The name of a sub_umbrella framework is recorded in the following structure.
+ */
+struct sub_umbrella_command {
+	uint32_t	cmd;		/* LC_SUB_UMBRELLA */
+	uint32_t	cmdsize;	/* includes sub_umbrella string */
+	union lc_str 	sub_umbrella;	/* the sub_umbrella framework name */
+};
+```
 
 **Fields**:
 
@@ -1029,7 +1406,28 @@ Defines the attributes of the `LC_SUB_LIBRARY` load command. Identifies a subl
 
 **Declaration**:
 
-`struct sub_library_command { uint32_t cmd; uint32_t cmdsize; union lc_str sub_library; };`
+```c
+/*
+ * A dynamically linked shared library may be a sub_library of another shared
+ * library.  If so it will be linked with "-sub_library library_name" where
+ * Where "library_name" is the name of the sub_library shared library.  When
+ * staticly linking when -twolevel_namespace is in effect a twolevel namespace 
+ * shared library will only cause its subframeworks and those frameworks
+ * listed as sub_umbrella frameworks and libraries listed as sub_libraries to
+ * be implicited linked in.  Any other dependent dynamic libraries will not be
+ * linked it when -twolevel_namespace is in effect.  The primary library
+ * recorded by the static linker when resolving a symbol in these libraries
+ * will be the umbrella framework (or dynamic library). Zero or more sub_library
+ * shared libraries may be use by an umbrella framework or (or dynamic library).
+ * The name of a sub_library framework is recorded in the following structure.
+ * For example /usr/lib/libobjc_profile.A.dylib would be recorded as "libobjc".
+ */
+struct sub_library_command {
+	uint32_t	cmd;		/* LC_SUB_LIBRARY */
+	uint32_t	cmdsize;	/* includes sub_library string */
+	union lc_str 	sub_library;	/* the sub_library name */
+};
+```
 
 **Fields**:
 
@@ -1051,7 +1449,22 @@ Defines the attributes of the `LC_SUB_CLIENT` load command. Specifies the name
 
 **Declaration**:
 
-`struct sub_client_command { uint32_t cmd; uint32_t cmdsize; union lc_str client; };`
+```c
+/*
+ * For dynamically linked shared libraries that are subframework of an umbrella
+ * framework they can allow clients other than the umbrella framework or other
+ * subframeworks in the same umbrella framework.  To do this the subframework
+ * is built with "-allowable_client client_name" and an LC_SUB_CLIENT load
+ * command is created for each -allowable_client flag.  The client_name is
+ * usually a framework name.  It can also be a name used for bundles clients
+ * where the bundle is built with "-client_name client_name".
+ */
+struct sub_client_command {
+	uint32_t	cmd;		/* LC_SUB_CLIENT */
+	uint32_t	cmdsize;	/* includes client string */
+	union lc_str 	client;		/* the client name */
+};
+```
 
 **Fields**:
 
@@ -1077,7 +1490,21 @@ Defines the attributes of the `LC_SYMTAB` load command. Describes the size and
 
 **Declaration**:
 
-`struct symtab_command { uint_32 cmd; uint_32 cmdsize; uint_32 symoff; uint_32 nsyms; uint_32 stroff; uint_32 strsize; };`
+```c
+/*
+ * The symtab_command contains the offsets and sizes of the link-edit 4.3BSD
+ * "stab" style symbol table information as described in the header files
+ * <nlist.h> and <stab.h>.
+ */
+struct symtab_command {
+	uint32_t	cmd;		/* LC_SYMTAB */
+	uint32_t	cmdsize;	/* sizeof(struct symtab_command) */
+	uint32_t	symoff;		/* symbol table offset */
+	uint32_t	nsyms;		/* number of symbol table entries */
+	uint32_t	stroff;		/* string table offset */
+	uint32_t	strsize;	/* string table size in bytes */
+};
+```
 
 **Fields**:
 
@@ -1115,7 +1542,28 @@ Describes an entry in the symbol table for 32-bit architectures. Declared in `/
 
 **Declaration**:
 
-`struct nlist { union { #ifndef __LP64__ char *n_name; #endif int32_t n_strx; } n_un; uint8_t n_type; uint8_t n_sect; int16_t n_desc;uint32_t n_value; };`
+```c
+/*
+ * Format of a symbol table entry of a Mach-O file for 32-bit architectures.
+ * Modified from the BSD format.  The modifications from the original format
+ * were changing n_other (an unused field) to n_sect and the addition of the
+ * N_SECT type.  These modifications are required to support symbols in a larger
+ * number of sections not just the three sections (text, data and bss) in a BSD
+ * file.
+ */
+struct nlist {
+	union {
+#ifndef __LP64__
+		char *n_name;	/* for use when in-core */
+#endif
+		uint32_t n_strx;	/* index into the string table */
+	} n_un;
+	uint8_t n_type;		/* type flag, see below */
+	uint8_t n_sect;		/* section number or NO_SECT */
+	int16_t n_desc;		/* see <mach-o/stab.h> */
+	uint32_t n_value;	/* value of this symbol (or stab offset) */
+};
+```
 
 **Fields**:
 
@@ -1179,7 +1627,20 @@ Describes an entry in the symbol table for 64-bit architectures. Declared in `/
 
 **Declaration**:
 
-`struct nlist_64 { union { uint32_t n_strx; } n_un; uint8_t n_type; uint8_t n_sect; uint16_t n_desc; uint64_t n_value; };`
+```c
+/*
+ * This is the symbol table entry structure for 64-bit architectures.
+ */
+struct nlist_64 {
+    union {
+        uint32_t  n_strx; /* index into the string table */
+    } n_un;
+    uint8_t n_type;        /* type flag, see below */
+    uint8_t n_sect;        /* section number or NO_SECT */
+    uint16_t n_desc;       /* see <mach-o/stab.h> */
+    uint64_t n_value;      /* value of this symbol (or stab offset) */
+};
+```
 
 **Fields**:
 
@@ -1242,7 +1703,163 @@ The data structure for the `LC_DYSYMTAB` load command. It describes the sizes 
 
 **Declaration**:
 
-`struct dysymtab_command { uint32_t cmd; uint32_t cmdsize; uint32_t ilocalsym; uint32_t nlocalsym; uint32_t iextdefsym; uint32_t nextdefsym;uint32_t iundefsym; uint32_t nundefsym; uint32_t tocoff; uint32_t ntoc; uint32_t modtaboff; uint32_t nmodtab; uint32_t extrefsymoff;uint32_t nextrefsyms; uint32_t indirectsymoff; uint32_t nindirectsyms; uint32_t extreloff; uint32_t nextrel; uint32_t locreloff; uint32_tnlocrel; };`
+```c
+/*
+ * This is the second set of the symbolic information which is used to support
+ * the data structures for the dynamically link editor.
+ *
+ * The original set of symbolic information in the symtab_command which contains
+ * the symbol and string tables must also be present when this load command is
+ * present.  When this load command is present the symbol table is organized
+ * into three groups of symbols:
+ *	local symbols (static and debugging symbols) - grouped by module
+ *	defined external symbols - grouped by module (sorted by name if not lib)
+ *	undefined external symbols (sorted by name if MH_BINDATLOAD is not set,
+ *	     			    and in order the were seen by the static
+ *				    linker if MH_BINDATLOAD is set)
+ * In this load command there are offsets and counts to each of the three groups
+ * of symbols.
+ *
+ * This load command contains a the offsets and sizes of the following new
+ * symbolic information tables:
+ *	table of contents
+ *	module table
+ *	reference symbol table
+ *	indirect symbol table
+ * The first three tables above (the table of contents, module table and
+ * reference symbol table) are only present if the file is a dynamically linked
+ * shared library.  For executable and object modules, which are files
+ * containing only one module, the information that would be in these three
+ * tables is determined as follows:
+ * 	table of contents - the defined external symbols are sorted by name
+ *	module table - the file contains only one module so everything in the
+ *		       file is part of the module.
+ *	reference symbol table - is the defined and undefined external symbols
+ *
+ * For dynamically linked shared library files this load command also contains
+ * offsets and sizes to the pool of relocation entries for all sections
+ * separated into two groups:
+ *	external relocation entries
+ *	local relocation entries
+ * For executable and object modules the relocation entries continue to hang
+ * off the section structures.
+ */
+struct dysymtab_command {
+    uint32_t cmd;	/* LC_DYSYMTAB */
+    uint32_t cmdsize;	/* sizeof(struct dysymtab_command) */
+
+    /*
+     * The symbols indicated by symoff and nsyms of the LC_SYMTAB load command
+     * are grouped into the following three groups:
+     *    local symbols (further grouped by the module they are from)
+     *    defined external symbols (further grouped by the module they are from)
+     *    undefined symbols
+     *
+     * The local symbols are used only for debugging.  The dynamic binding
+     * process may have to use them to indicate to the debugger the local
+     * symbols for a module that is being bound.
+     *
+     * The last two groups are used by the dynamic binding process to do the
+     * binding (indirectly through the module table and the reference symbol
+     * table when this is a dynamically linked shared library file).
+     */
+    uint32_t ilocalsym;	/* index to local symbols */
+    uint32_t nlocalsym;	/* number of local symbols */
+
+    uint32_t iextdefsym;/* index to externally defined symbols */
+    uint32_t nextdefsym;/* number of externally defined symbols */
+
+    uint32_t iundefsym;	/* index to undefined symbols */
+    uint32_t nundefsym;	/* number of undefined symbols */
+
+    /*
+     * For the for the dynamic binding process to find which module a symbol
+     * is defined in the table of contents is used (analogous to the ranlib
+     * structure in an archive) which maps defined external symbols to modules
+     * they are defined in.  This exists only in a dynamically linked shared
+     * library file.  For executable and object modules the defined external
+     * symbols are sorted by name and is use as the table of contents.
+     */
+    uint32_t tocoff;	/* file offset to table of contents */
+    uint32_t ntoc;	/* number of entries in table of contents */
+
+    /*
+     * To support dynamic binding of "modules" (whole object files) the symbol
+     * table must reflect the modules that the file was created from.  This is
+     * done by having a module table that has indexes and counts into the merged
+     * tables for each module.  The module structure that these two entries
+     * refer to is described below.  This exists only in a dynamically linked
+     * shared library file.  For executable and object modules the file only
+     * contains one module so everything in the file belongs to the module.
+     */
+    uint32_t modtaboff;	/* file offset to module table */
+    uint32_t nmodtab;	/* number of module table entries */
+
+    /*
+     * To support dynamic module binding the module structure for each module
+     * indicates the external references (defined and undefined) each module
+     * makes.  For each module there is an offset and a count into the
+     * reference symbol table for the symbols that the module references.
+     * This exists only in a dynamically linked shared library file.  For
+     * executable and object modules the defined external symbols and the
+     * undefined external symbols indicates the external references.
+     */
+    uint32_t extrefsymoff;	/* offset to referenced symbol table */
+    uint32_t nextrefsyms;	/* number of referenced symbol table entries */
+
+    /*
+     * The sections that contain "symbol pointers" and "routine stubs" have
+     * indexes and (implied counts based on the size of the section and fixed
+     * size of the entry) into the "indirect symbol" table for each pointer
+     * and stub.  For every section of these two types the index into the
+     * indirect symbol table is stored in the section header in the field
+     * reserved1.  An indirect symbol table entry is simply a 32bit index into
+     * the symbol table to the symbol that the pointer or stub is referring to.
+     * The indirect symbol table is ordered to match the entries in the section.
+     */
+    uint32_t indirectsymoff; /* file offset to the indirect symbol table */
+    uint32_t nindirectsyms;  /* number of indirect symbol table entries */
+
+    /*
+     * To support relocating an individual module in a library file quickly the
+     * external relocation entries for each module in the library need to be
+     * accessed efficiently.  Since the relocation entries can't be accessed
+     * through the section headers for a library file they are separated into
+     * groups of local and external entries further grouped by module.  In this
+     * case the presents of this load command who's extreloff, nextrel,
+     * locreloff and nlocrel fields are non-zero indicates that the relocation
+     * entries of non-merged sections are not referenced through the section
+     * structures (and the reloff and nreloc fields in the section headers are
+     * set to zero).
+     *
+     * Since the relocation entries are not accessed through the section headers
+     * this requires the r_address field to be something other than a section
+     * offset to identify the item to be relocated.  In this case r_address is
+     * set to the offset from the vmaddr of the first LC_SEGMENT command.
+     * For MH_SPLIT_SEGS images r_address is set to the the offset from the
+     * vmaddr of the first read-write LC_SEGMENT command.
+     *
+     * The relocation entries are grouped by module and the module table
+     * entries have indexes and counts into them for the group of external
+     * relocation entries for that the module.
+     *
+     * For sections that are merged across modules there must not be any
+     * remaining external relocation entries for them (for merged sections
+     * remaining relocation entries must be local).
+     */
+    uint32_t extreloff;	/* offset to external relocation entries */
+    uint32_t nextrel;	/* number of external relocation entries */
+
+    /*
+     * All the local relocation entries are grouped together (they are not
+     * grouped by their module since they are only used if the object is moved
+     * from it staticly link edited address).
+     */
+    uint32_t locreloff;	/* offset to local relocation entries */
+    uint32_t nlocrel;	/* number of local relocation entries */
+
+};	
+```
 
 **Fields**:
 
@@ -1336,7 +1953,15 @@ Describes an entry in the table of contents of a dynamic shared library. Declare
 
 **Declaration**:
 
-`struct dylib_table_of_contents { uint32_t symbol_index; uint32_t module_index; };`
+```c
+/* a table of contents entry */
+struct dylib_table_of_contents {
+    uint32_t symbol_index;	/* the defined external symbol
+				   (index into the symbol table) */
+    uint32_t module_index;	/* index into the module table this symbol
+				   is defined in */
+};	
+```
 
 **Fields**:
 
@@ -1354,7 +1979,34 @@ Describes a module table entry for a dynamic shared library for 32-bit architect
 
 **Declaration**:
 
-`struct dylib_module { uint32_t module_name; uint32_t iextdefsym; uint32_t nextdefsym; uint32_t irefsym; uint32_t nrefsym; uint32_tilocalsym; uint32_t nlocalsym; uint32_t iextrel; uint32_t nextrel; uint32_t iinit_iterm; uint32_t ninit_nterm; uint32_tobjc_module_info_addr; uint32_t objc_module_info_size; };`
+```c
+/* a module table entry */
+struct dylib_module {
+    uint32_t module_name;	/* the module name (index into string table) */
+
+    uint32_t iextdefsym;	/* index into externally defined symbols */
+    uint32_t nextdefsym;	/* number of externally defined symbols */
+    uint32_t irefsym;		/* index into reference symbol table */
+    uint32_t nrefsym;		/* number of reference symbol table entries */
+    uint32_t ilocalsym;		/* index into symbols for local symbols */
+    uint32_t nlocalsym;		/* number of local symbols */
+
+    uint32_t iextrel;		/* index into external relocation entries */
+    uint32_t nextrel;		/* number of external relocation entries */
+
+    uint32_t iinit_iterm;	/* low 16 bits are the index into the init
+				   section, high 16 bits are the index into
+			           the term section */
+    uint32_t ninit_nterm;	/* low 16 bits are the number of init section
+				   entries, high 16 bits are the number of
+				   term section entries */
+
+    uint32_t			/* for this module address of the start of */
+	objc_module_info_addr;  /*  the (__OBJC,__module_info) section */
+    uint32_t			/* for this module size of */
+	objc_module_info_size;	/*  the (__OBJC,__module_info) section */
+};	
+```
 
 **Fields**:
 
@@ -1416,7 +2068,34 @@ Describes a module table entry for a dynamic shared library for 64-bit architect
 
 **Declaration**:
 
-`struct dylib_module_64 { uint32_t module_name; uint32_t iextdefsym; uint32_t nextdefsym; uint32_t irefsym; uint32_t nrefsym; uint32_tilocalsym; uint32_t nlocalsym; uint32_t iextrel; uint32_t nextrel; uint32_t iinit_iterm; uint32_t ninit_nterm; uint32_tobjc_module_info_size; uint64_t objc_module_info_addr; };`
+```c
+/* a 64-bit module table entry */
+struct dylib_module_64 {
+    uint32_t module_name;	/* the module name (index into string table) */
+
+    uint32_t iextdefsym;	/* index into externally defined symbols */
+    uint32_t nextdefsym;	/* number of externally defined symbols */
+    uint32_t irefsym;		/* index into reference symbol table */
+    uint32_t nrefsym;		/* number of reference symbol table entries */
+    uint32_t ilocalsym;		/* index into symbols for local symbols */
+    uint32_t nlocalsym;		/* number of local symbols */
+
+    uint32_t iextrel;		/* index into external relocation entries */
+    uint32_t nextrel;		/* number of external relocation entries */
+
+    uint32_t iinit_iterm;	/* low 16 bits are the index into the init
+				   section, high 16 bits are the index into
+				   the term section */
+    uint32_t ninit_nterm;      /* low 16 bits are the number of init section
+				  entries, high 16 bits are the number of
+				  term section entries */
+
+    uint32_t			/* for this module size of */
+        objc_module_info_size;	/*  the (__OBJC,__module_info) section */
+    uint64_t			/* for this module address of the start of */
+        objc_module_info_addr;	/*  the (__OBJC,__module_info) section */
+};
+```
 
 **Fields**:
 
@@ -1478,7 +2157,20 @@ Defines the attributes of an external reference table entry for the external ref
 
 **Declaration**:
 
-`struct dylib_reference { uint32_t isym:24, flags:8; };`
+```c
+/* 
+ * The entries in the reference symbol table are used when loading the module
+ * (both by the static and dynamic link editors) and if the module is unloaded
+ * or replaced.  Therefore all external symbols (defined and undefined) are
+ * listed in the module's reference table.  The flags describe the type of
+ * reference that is being made.  The constants for the flags are defined in
+ * <mach-o/nlist.h> as they are also used for symbol table entries.
+ */
+struct dylib_reference {
+    uint32_t isym:24,		/* index into the symbol table */
+    		flags:8;	/* flags to indicate the type of reference */
+};
+```
 
 **Fields**:
 
@@ -1503,9 +2195,23 @@ Describes an item in the file that uses an address that needs to be updated when
 **Declaration**:
 
 ```c
-struct relocation_info {
-  int32_t r_address;
-  uint32_t r_symbolnum:24, r_pcrel:1, r_length:2, r_extern:1, r_type:4;
+/*
+ * Format of a relocation entry of a Mach-O file.  Modified from the 4.3BSD
+ * format.  The modifications from the original format were changing the value
+ * of the r_symbolnum field for "local" (r_extern == 0) relocation entries.
+ * This modification is required to support symbols in an arbitrary number of
+ * sections not just the three sections (text, data and bss) in a 4.3BSD file.
+ * Also the last 4 bits have had the r_type tag added to them.
+ */
+struct relocation_info {
+   int32_t	r_address;	/* offset in the section to what is being
+				   relocated */
+   uint32_t     r_symbolnum:24,	/* symbol index if r_extern == 1 or section
+				   ordinal if r_extern == 0 */
+		r_pcrel:1, 	/* was relocated pc relative already */
+		r_length:2,	/* 0=byte, 1=word, 2=long, 3=quad */
+		r_extern:1,	/* does not include value of sym referenced */
+		r_type:4;	/* if not 0, machine specific relocation type */
 };
 ```
 
@@ -1587,7 +2293,31 @@ Describes an item in the file—using a nonzero constant in its relocatable expr
 
 **Declaration**:
 
-`struct scattered_relocation_info { #ifdef __BIG_ENDIAN__ uint32_t r_scattered:1, r_pcrel:1, r_length:2, r_type:4, r_address:24; int32_t r_value;#endif /* __BIG_ENDIAN__ */ #ifdef __LITTLE_ENDIAN__ uint32_t r_address:24, r_type:4, r_length:2, r_pcrel:1, r_scattered:1; int32_t r_value; #endif /* __LITTLE_ENDIAN__ */ };`
+```c
+struct scattered_relocation_info {
+#ifdef __BIG_ENDIAN__
+   uint32_t	r_scattered:1,	/* 1=scattered, 0=non-scattered (see above) */
+		r_pcrel:1, 	/* was relocated pc relative already */
+		r_length:2,	/* 0=byte, 1=word, 2=long, 3=quad */
+		r_type:4,	/* if not 0, machine specific relocation type */
+   		r_address:24;	/* offset in the section to what is being
+				   relocated */
+   int32_t	r_value;	/* the value the item to be relocated is
+				   refering to (without any offset added) */
+#endif /* __BIG_ENDIAN__ */
+#ifdef __LITTLE_ENDIAN__
+   uint32_t
+   		r_address:24,	/* offset in the section to what is being
+				   relocated */
+		r_type:4,	/* if not 0, machine specific relocation type */
+		r_length:2,	/* 0=byte, 1=word, 2=long, 3=quad */
+		r_pcrel:1, 	/* was relocated pc relative already */
+		r_scattered:1;	/* 1=scattered, 0=non-scattered (see above) */
+   int32_t	r_value;	/* the value the item to be relocated is
+				   refering to (without any offset added) */
+#endif /* __LITTLE_ENDIAN__ */
+};
+```
 
 **Fields**:
 
@@ -1647,7 +2377,12 @@ Defines the layout of a binary that contains code for more than one architecture
 
 **Declaration**:
 
-`struct fat_header { uint32_t magic; uint32_t nfat_arch; };`
+```c
+struct fat_header {
+	uint32_t	magic;		/* FAT_MAGIC */
+	uint32_t	nfat_arch;	/* number of structs that follow */
+};
+```
 
 **Fields**:
 
