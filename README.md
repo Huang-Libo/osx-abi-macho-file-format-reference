@@ -1,6 +1,149 @@
+# OS X ABI Mach-O File Format Reference
+
+## Preamble
+
 Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.
 
-# OS X ABI Mach-O File Format Reference
+## Table of Contens
+
+- [OS X ABI Mach-O File Format Reference](#os-x-abi-mach-o-file-format-reference)
+  - [Preamble](#preamble)
+  - [Table of Contens](#table-of-contens)
+- [Introduction](#introduction)
+  - [Basic Structure](#basic-structure)
+  - [Header Structure and Load Commands](#header-structure-and-load-commands)
+  - [Segments](#segments)
+  - [Sections](#sections)
+    - [Table 1: The sections of a `__TEXT` segment](#table-1-the-sections-of-a__textsegment)
+    - [Table 2: The sections of a `__DATA` segment](#table-2-the-sections-of-a__datasegment)
+    - [Table 3: The sections of a `__IMPORT` segment](#table-3-the-sections-of-a__importsegment)
+  - [Data Types](#data-types)
+    - [Header Data Structure](#header-data-structure)
+      - [`mach_header`](#mach_header)
+        - [Declaration](#declaration)
+        - [Fields](#fields)
+      - [`mach_header_64`](#mach_header_64)
+        - [Declaration](#declaration-1)
+        - [Fields](#fields-1)
+    - [Load Command Data Structures](#load-command-data-structures)
+      - [`load_command`](#load_command)
+        - [Declaration](#declaration-2)
+        - [Fields](#fields-2)
+        - [Discussion](#discussion)
+        - [Table 4: Mach-O load commands](#table-4-mach-o-load-commands)
+      - [`uuid_command`](#uuid_command)
+        - [Declaration](#declaration-3)
+        - [Fields](#fields-3)
+      - [`segment_command`](#segment_command)
+        - [Declaration](#declaration-4)
+        - [Fields](#fields-4)
+      - [`segment_command_64`](#segment_command_64)
+        - [Declaration](#declaration-5)
+        - [Fields](#fields-5)
+      - [`section`](#section)
+        - [Declaration](#declaration-6)
+        - [Fields](#fields-6)
+        - [Discussion](#discussion-1)
+      - [`section_64`](#section_64)
+        - [Declaration](#declaration-7)
+        - [Fields](#fields-7)
+        - [Discussion](#discussion-2)
+      - [`twolevel_hints_command`](#twolevel_hints_command)
+        - [Declaration](#declaration-8)
+        - [Fields](#fields-8)
+        - [Discussion](#discussion-3)
+      - [`twolevel_hint`](#twolevel_hint)
+        - [Declaration](#declaration-9)
+        - [Fields](#fields-9)
+        - [Discussion](#discussion-4)
+      - [`lc_str`](#lc_str)
+        - [Declaration](#declaration-10)
+        - [Fields](#fields-10)
+        - [Discussion](#discussion-5)
+      - [`dylib`](#dylib)
+        - [Declaration](#declaration-11)
+        - [Fields](#fields-11)
+      - [`dylib_command`](#dylib_command)
+        - [Declaration](#declaration-12)
+        - [Fields](#fields-12)
+        - [Discussion](#discussion-6)
+      - [`dylinker_command`](#dylinker_command)
+        - [Declaration](#declaration-13)
+        - [Fields](#fields-13)
+        - [Discussion](#discussion-7)
+      - [`prebound_dylib_command`](#prebound_dylib_command)
+        - [Declaration](#declaration-14)
+        - [Fields](#fields-14)
+      - [`thread_command`](#thread_command)
+        - [Declaration](#declaration-15)
+        - [Fields](#fields-15)
+      - [`routines_command`](#routines_command)
+        - [Declaration](#declaration-16)
+        - [Fields](#fields-16)
+        - [Discussion](#discussion-8)
+      - [`routines_command_64`](#routines_command_64)
+        - [Declaration](#declaration-17)
+        - [Fields](#fields-17)
+        - [Discussion](#discussion-9)
+      - [`sub_framework_command`](#sub_framework_command)
+        - [Declaration](#declaration-18)
+        - [Fields](#fields-18)
+      - [`sub_umbrella_command`](#sub_umbrella_command)
+        - [Declaration](#declaration-19)
+        - [Fields](#fields-19)
+      - [`sub_library_command`](#sub_library_command)
+        - [Declaration](#declaration-20)
+        - [Fields](#fields-20)
+      - [`sub_client_command`](#sub_client_command)
+        - [Declaration](#declaration-21)
+        - [Fields](#fields-21)
+    - [Symbol Table and Related Data Structures](#symbol-table-and-related-data-structures)
+      - [`symtab_command`](#symtab_command)
+        - [Declaration](#declaration-22)
+        - [Fields](#fields-22)
+        - [Discussion](#discussion-10)
+      - [`nlist`](#nlist)
+        - [Declaration](#declaration-23)
+        - [Fields](#fields-23)
+        - [Discussion](#discussion-11)
+      - [`nlist_64`](#nlist_64)
+        - [Declaration](#declaration-24)
+        - [Fields](#fields-24)
+        - [Discussion](#discussion-12)
+      - [`dysymtab_command`](#dysymtab_command)
+        - [Declaration](#declaration-25)
+        - [Fields](#fields-25)
+        - [Discussion](#discussion-13)
+      - [`dylib_table_of_contents`](#dylib_table_of_contents)
+        - [Declaration](#declaration-26)
+        - [Fields](#fields-26)
+      - [`dylib_module`](#dylib_module)
+        - [Declaration](#declaration-27)
+        - [Fields](#fields-27)
+      - [`dylib_module_64`](#dylib_module_64)
+        - [Declaration](#declaration-28)
+        - [Fields](#fields-28)
+      - [`dylib_reference`](#dylib_reference)
+        - [Declaration](#declaration-29)
+        - [Fields](#fields-29)
+    - [Relocation Data Structures](#relocation-data-structures)
+      - [`relocation_info`](#relocation_info)
+        - [Declaration](#declaration-30)
+        - [Fields](#fields-30)
+      - [`scattered_relocation_info`](#scattered_relocation_info)
+        - [Declaration](#declaration-31)
+        - [Fields](#fields-31)
+        - [Discussion](#discussion-14)
+  - [Universal Binaries and 32-bit/64-bit PowerPC Binaries](#universal-binaries-and-32-bit64-bit-powerpc-binaries)
+    - [`fat_header`](#fat_header)
+      - [Declaration](#declaration-32)
+      - [Fields](#fields-32)
+      - [Discussion](#discussion-15)
+    - [`fat_arch`](#fat_arch)
+      - [Fields](#fields-33)
+      - [Discussion](#discussion-16)
+
+# Introduction
 
 This document describes the structure of the Mach-O (Mach object) file format, which is the standard used to store programs and libraries on disk in the Mac app binary interface (ABI). To understand how the Xcode tools work with Mach-O files, and to perform low-level debugging tasks, you need to understand this information.
 
@@ -101,11 +244,11 @@ The `__TEXT` and `__DATA` segments may contain a number of standard sections
 
 Specifies the general attributes of a file. Appears at the beginning of object files targeted to 32-bit architectures. Declared in `/usr/include/mach-o/loader.h`. See also `mach_header_64`.
 
-###### Declaration
+##### Declaration
 
 `struct mach_header { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_t sizeofcmds;uint32_t flags; };`
 
-###### Fields
+##### Fields
 
 `magic`
 
@@ -121,21 +264,21 @@ An integer specifying the exact model of the CPU. To run on all PowerPC or x86 p
 
 `filetype`An integer indicating the usage and alignment of the file. Valid values for this field include:
 
-* The `MH_OBJECT` file type is the format used for intermediate object files. It is a very compact format containing all its sections in one segment. The compiler and assembler usually create one `MH_OBJECT` file for each source code file. By convention, the file name extension for this format is `.o`.
+- The `MH_OBJECT` file type is the format used for intermediate object files. It is a very compact format containing all its sections in one segment. The compiler and assembler usually create one `MH_OBJECT` file for each source code file. By convention, the file name extension for this format is `.o`.
 
-* The `MH_EXECUTE` file type is the format used by standard executable programs.
+- The `MH_EXECUTE` file type is the format used by standard executable programs.
 
-* The `MH_BUNDLE` file type is the type typically used by code that you load at runtime (typically called bundles or plug-ins). By convention, the file name extension for this format is `.bundle`.
+- The `MH_BUNDLE` file type is the type typically used by code that you load at runtime (typically called bundles or plug-ins). By convention, the file name extension for this format is `.bundle`.
 
-* The `MH_DYLIB` file type is for dynamic shared libraries. It contains some additional tables to support multiple modules. By convention, the file name extension for this format is `.dylib`, except for the main shared library of a framework, which does not usually have a file name extension.
+- The `MH_DYLIB` file type is for dynamic shared libraries. It contains some additional tables to support multiple modules. By convention, the file name extension for this format is `.dylib`, except for the main shared library of a framework, which does not usually have a file name extension.
 
-* The `MH_PRELOAD` file type is an executable format used for special-purpose programs that are not loaded by the OS X kernel, such as programs burned into programmable ROM chips. Do not confuse this file type with the `MH_PREBOUND` flag, which is a flag that the static linker sets in the header structure to mark a prebound image.
+- The `MH_PRELOAD` file type is an executable format used for special-purpose programs that are not loaded by the OS X kernel, such as programs burned into programmable ROM chips. Do not confuse this file type with the `MH_PREBOUND` flag, which is a flag that the static linker sets in the header structure to mark a prebound image.
 
-* The `MH_CORE` file type is used to store core files, which are traditionally created when a program crashes. Core files store the entire address space of a process at the time it crashed. You can later run `gdb` on the core file to figure out why the crash occurred.
+- The `MH_CORE` file type is used to store core files, which are traditionally created when a program crashes. Core files store the entire address space of a process at the time it crashed. You can later run `gdb` on the core file to figure out why the crash occurred.
 
-* The `MH_DYLINKER` file type is the type of a dynamic linker shared library. This is the type of the `dyld` file.
+- The `MH_DYLINKER` file type is the type of a dynamic linker shared library. This is the type of the `dyld` file.
 
-* The `MH_DSYM` file type designates files that store symbol information for a corresponding binary file.
+- The `MH_DSYM` file type designates files that store symbol information for a corresponding binary file.
 
 `ncmds`
 
@@ -149,30 +292,30 @@ An integer indicating the number of bytes occupied by the load commands followin
 
 An integer containing a set of bit flags that indicate the state of certain optional features of the Mach-O file format. These are the masks you can use to manipulate this field:
 
-* `MH_NOUNDEFS`—The object file contained no undefined references when it was built.
-* `MH_INCRLINK`—The object file is the output of an incremental link against a base file and cannot be linked again.
-* `MH_DYLDLINK`—The file is input for the dynamic linker and cannot be statically linked again.
-* `MH_TWOLEVEL`—The image is using two-level namespace bindings.
-* `MH_BINDATLOAD`—The dynamic linker should bind the undefined references when the file is loaded.
-* `MH_PREBOUND`—The file’s undefined references are prebound.
-* `MH_PREBINDABLE`—This file is not prebound but can have its prebinding redone. Used only when `MH_PREBEOUND` is not set.
-* `MH_NOFIXPREBINDING`—The dynamic linker doesn’t notify the prebinding agent about this executable.
-* `MH_ALLMODSBOUND`—Indicates that this binary binds to all two-level namespace modules of its dependent libraries. Used only when `MH_PREBINDABLE` and `MH_TWOLEVEL` are set.
-* `MH_CANONICAL`—This file has been canonicalized by unprebinding—clearing prebinding information from the file. See the `redo_prebinding` man page for details.
-* `MH_SPLIT_SEGS`—The file has its read-only and read-write segments split.
-* `MH_FORCE_FLAT`—The executable is forcing all images to use flat namespace bindings.
-* `MH_SUBSECTIONS_VIA_SYMBOLS`—The sections of the object file can be divided into individual blocks. These blocks are dead-stripped if they are not used by other code. See Linking for details.
-* `MH_NOMULTIDEFS`—This umbrella guarantees there are no multiple definitions of symbols in its subimages. As a result, the two-level namespace hints can always be used.
+- `MH_NOUNDEFS`—The object file contained no undefined references when it was built.
+- `MH_INCRLINK`—The object file is the output of an incremental link against a base file and cannot be linked again.
+- `MH_DYLDLINK`—The file is input for the dynamic linker and cannot be statically linked again.
+- `MH_TWOLEVEL`—The image is using two-level namespace bindings.
+- `MH_BINDATLOAD`—The dynamic linker should bind the undefined references when the file is loaded.
+- `MH_PREBOUND`—The file’s undefined references are prebound.
+- `MH_PREBINDABLE`—This file is not prebound but can have its prebinding redone. Used only when `MH_PREBEOUND` is not set.
+- `MH_NOFIXPREBINDING`—The dynamic linker doesn’t notify the prebinding agent about this executable.
+- `MH_ALLMODSBOUND`—Indicates that this binary binds to all two-level namespace modules of its dependent libraries. Used only when `MH_PREBINDABLE` and `MH_TWOLEVEL` are set.
+- `MH_CANONICAL`—This file has been canonicalized by unprebinding—clearing prebinding information from the file. See the `redo_prebinding` man page for details.
+- `MH_SPLIT_SEGS`—The file has its read-only and read-write segments split.
+- `MH_FORCE_FLAT`—The executable is forcing all images to use flat namespace bindings.
+- `MH_SUBSECTIONS_VIA_SYMBOLS`—The sections of the object file can be divided into individual blocks. These blocks are dead-stripped if they are not used by other code. See Linking for details.
+- `MH_NOMULTIDEFS`—This umbrella guarantees there are no multiple definitions of symbols in its subimages. As a result, the two-level namespace hints can always be used.
 
 #### `mach_header_64`
 
 Defines the general attributes of a file targeted for a 64-bit architecture. Declared in `/usr/include/mach-o/loader.h`.
 
-###### Declaration
+##### Declaration
 
 `struct mach_header_64 { uint32_t magic; cpu_type_t cputype; cpu_subtype_t cpusubtype; uint32_t filetype; uint32_t ncmds; uint32_tsizeofcmds; uint32_t flags; uint32_t reserved; };`
 
-###### Fields
+##### Fields
 
 `magic`
 
@@ -1102,11 +1245,11 @@ A 16-bit value providing additional information about the nature of this symbol 
 
 Additionally, the following bits might also be set:
 
-- `REFERENCED_DYNAMICALLY` (0x10)—Must be set for any defined symbol that is referenced by dynamic-loader APIs (such as `dlsym``` and `NSLookupSymbolInImage```) and not ordinary undefined symbol references. The `strip` tool uses this bit to avoid removing symbols that must exist: If the symbol has this bit set, `strip` does not strip it.
-- `N_DESC_DISCARDED` (0x20)—Sometimes used by the dynamic linker at runtime in a fully linked image. Do not set this bit in a fully linked image.
-- `N_NO_DEAD_STRIP`(0x20)—When set in a relocatable object file (file type `MH_OBJECT`) on a defined symbol, indicates to the static linker to never dead-strip the symbol. (Note that the same bit (0x20) is used for two nonoverlapping purposes.)
-- `N_WEAK_REF` (0x40)—Indicates that this undefined symbol is a weak reference. If the dynamic linker cannot find a definition for this symbol, it sets the address of this symbol to 0. The static linker sets this symbol given the appropriate weak-linking flags.
-- `N_WEAK_DEF` (0x80)—Indicates that this symbol is a weak definition. If the static linker or the dynamic linker finds another (non-weak) definition for this symbol, the weak definition is ignored. Only symbols in a coalesced `section` can be marked as a weak definition.
+- `REFERENCED_DYNAMICALLY` (`0x10`) — Must be set for any defined symbol that is referenced by dynamic-loader APIs (such as `dlsym` and `NSLookupSymbolInImage`) and not ordinary undefined symbol references. The `strip` tool uses this bit to avoid removing symbols that must exist: If the symbol has this bit set, `strip` does not strip it.
+- `N_DESC_DISCARDED` (`0x20`)—Sometimes used by the dynamic linker at runtime in a fully linked image. Do not set this bit in a fully linked image.
+- `N_NO_DEAD_STRIP`(`0x20`)—When set in a relocatable object file (file type `MH_OBJECT`) on a defined symbol, indicates to the static linker to never dead-strip the symbol. (Note that the same bit (`0x20`) is used for two nonoverlapping purposes.)
+- `N_WEAK_REF` (`0x40`)—Indicates that this undefined symbol is a weak reference. If the dynamic linker cannot find a definition for this symbol, it sets the address of this symbol to 0. The static linker sets this symbol given the appropriate weak-linking flags.
+- `N_WEAK_DEF` (`0x80`)—Indicates that this symbol is a weak definition. If the static linker or the dynamic linker finds another (non-weak) definition for this symbol, the weak definition is ignored. Only symbols in a coalesced `section` can be marked as a weak definition.
 
 If this file is a two-level namespace image (that is, if the `MH_TWOLEVEL` flag of the `mach_header` structure is set), the high 8 bits of `n_desc` specify the number of the library in which this undefined symbol is defined. Use the macro `GET_LIBRARY_ORDINAL` to obtain this value and the macro `SET_LIBRARY_ORDINAL` to set it. Zero specifies the current image. 1 through 253 specify the library number according to the order of `LC_LOAD_DYLIB` commands in the file. The value 254 is used for undefined symbols that are to be dynamically looked up (supported only in OS X v10.3 and later). For plug–ins that load symbols from the executable program they are linked against, 255 specifies the executable image. For flat namespace images, the high 8 bits must be 0.
 
@@ -1166,7 +1309,7 @@ A 16-bit value providing additional information about the nature of this symbol.
 
 Additionally, the following bits might also be set:
 
-- `REFERENCED_DYNAMICALLY` (0x10)—Must be set for any defined symbol that is referenced by dynamic-loader APIs (such as `dlsym``` and `NSLookupSymbolInImage```) and not ordinary undefined symbol references. The `strip` tool uses this bit to avoid removing symbols that must exist: If the symbol has this bit set, `strip` does not strip it.
+- `REFERENCED_DYNAMICALLY` (0x10)—Must be set for any defined symbol that is referenced by dynamic-loader APIs (such as `dlsym` and `NSLookupSymbolInImage`) and not ordinary undefined symbol references. The `strip` tool uses this bit to avoid removing symbols that must exist: If the symbol has this bit set, `strip` does not strip it.
 - `N_DESC_DISCARDED` (0x20)—Used by the dynamic linker at runtime. Do not set this bit.
 - `N_WEAK_REF` (0x40)—Indicates that this symbol is a weak reference. If the dynamic linker cannot find a definition for this symbol, it sets the address of this symbol to 0. The static linker sets this symbol given the appropriate weak-linking flags.
 - `N_WEAK_DEF` (0x80)—Indicates that this symbol is a weak definition. If the static linker or the dynamic linker finds another (non-weak) definition for this symbol, the weak definition is ignored. Only symbols in a coalesced `section` can be marked as a weak definition.
@@ -1435,7 +1578,6 @@ An index into the symbol table for the symbol being referenced.
 
 A constant for the type of reference being made. Use the same `REFERENCE_FLAG` constants as described in the `nlist` structure description.
 
-
 ### Relocation Data Structures
 
 *Relocation* is the process of moving symbols to a different address. When the static linker moves a symbol (a function or an item of data) to a different address, it needs to change all the references to that symbol to use the new address. The *relocation entries* in a Mach-O file contain offsets in the file to addresses that need to be relocated when the contents of the file are relocated. The addresses stored in CPU instructions can be absolute or relative. Each relocation entry specifies the exact format of the address. When creating the intermediate object file, the compiler generates one or more relocation entries for every instruction that contains an address. Because relocation to symbols at fixed addresses, and to relative addresses for position independent references, does not occur at runtime, the static linker typically removes some or all the relocation entries when building the final product.
@@ -1448,7 +1590,12 @@ Describes an item in the file that uses an address that needs to be updated when
 
 ##### Declaration
 
-`struct relocation_info { int32_t r_address; uint32_t r_symbolnum:24, r_pcrel:1, r_length:2, r_extern:1, r_type:4; };`
+```c
+struct relocation_info {
+  int32_t r_address;
+  uint32_t r_symbolnum:24, r_pcrel:1, r_length:2, r_extern:1, r_type:4;
+};
+```
 
 ##### Fields
 
@@ -1569,28 +1716,28 @@ Mach-O relocation data structures support two types of relocatable expressions i
 - *Symbol address + constant*. The most typical form of relocation is referencing a symbol’s address with no constant added. In this case, the value of the constant expression is 0.
 - *Address of section y – address of section x + constant*. The section difference form of relocation. This form of relocation supports position-independent code.
 
-
 ## Universal Binaries and 32-bit/64-bit PowerPC Binaries
 
 The standard development tools accept as parameters two kinds of binaries:
-* Object files targeted at one architecture. These include Mach-O files, static libraries, and dynamic libraries.
-* Binaries targeted at more than one architecture. These binaries contain compiled code and data for one of these system types:
-  * PowerPC-based (32-bit and 64-bit) Macintosh computers. Binaries that contain code for both 32-bit and 64-bit PowerPC-based Macintosh computers are are known as PPC/PPC64 binaries.
-  * Intel-based and PowerPC-based (32-bit, 64-bit, or both) Macintosh computers. Binaries that contain code for both Intel-based and PowerPC-based Macintosh computers are known as universal binaries.
+
+- Object files targeted at one architecture. These include Mach-O files, static libraries, and dynamic libraries.
+- Binaries targeted at more than one architecture. These binaries contain compiled code and data for one of these system types:
+  - PowerPC-based (32-bit and 64-bit) Macintosh computers. Binaries that contain code for both 32-bit and 64-bit PowerPC-based Macintosh computers are are known as PPC/PPC64 binaries.
+  - Intel-based and PowerPC-based (32-bit, 64-bit, or both) Macintosh computers. Binaries that contain code for both Intel-based and PowerPC-based Macintosh computers are known as universal binaries.
 
 Each object file is stored as a continuous set of bytes at an offset from the beginning of the binary. They use a simple archive format to store the two object files with a special header at the beginning of the file to allow the various runtime tools to quickly find the code appropriate for the current architecture.
 
 A binary that contains code for more than one architecture always begins with a `fat_header` data structure, followed by two `fat_arch` data structures and the actual data for the architectures contained in the file. All data in these data structures is stored in big-endian byte order.
 
-#### `fat_header`
+### `fat_header`
 
 Defines the layout of a binary that contains code for more than one architecture. Declared in the header `/usr/include/mach-o/fat.h`.
 
-##### Declaration
+#### Declaration
 
 `struct fat_header { uint32_t magic; uint32_t nfat_arch; };`
 
-##### Fields
+#### Fields
 
 `magic`
 
@@ -1598,26 +1745,26 @@ An integer containing the value 0xCAFEBABE in big-endian byte order format. On a
 
 `nfat_arch`
 
-##### Discussion
+#### Discussion
 
 The fat_header data structure is placed at the start of a binary that contains code for multiple architectures. Directly following the fat_header data structure is a set of `fat_arch` data structures, one for each architecture included in the binary. Regardless of the content this data structure describes, all its fields are stored in big-endian byte order.
 
-#### `fat_arch`
+### `fat_arch`
 
 Describes the location within the binary of an object file targeted at a single architecture. Declared in `/usr/include/mach-o/fat.h`.
 
-```
+```c
 struct fat_arch
 {
-cpu_type_t cputype;
-cpu_subtype_t cpusubtype;
-uint32_t offset;
-uint32_t size;
-uint32_t align;
+  cpu_type_t cputype;
+  cpu_subtype_t cpusubtype;
+  uint32_t offset;
+  uint32_t size;
+  uint32_t align;
 };
 ```
 
-##### Fields
+#### Fields
 
 `cputype`
 
@@ -1639,6 +1786,6 @@ Size of the data for this CPU.
 
 The power of 2 alignment for the offset of the object file for the architecture specified in cputype within the binary. This is required to ensure that, if this binary is changed, the contents it retains are correctly aligned for virtual memory paging and other uses.
 
-##### Discussion
+#### Discussion
 
 An array of `fat_arch` data structures appears directly after the `fat_header` data structure of a binary that contains object files for multiple architectures. Regardless of the content this data structure describes, all its fields are stored in big-endian byte order.
