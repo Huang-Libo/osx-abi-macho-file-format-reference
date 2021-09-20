@@ -1,6 +1,9 @@
 # OS X ABI Mach-O File Format Reference
 
-**Fork 说明**：添加了目录、优化了格式，方便阅读。
+**Fork 说明**：
+
+- 为 Markdown 文档添加了目录、优化了文本和代码的格式，方便阅读。
+- Apple 文档：[Mach-O_File_Format.pdf](Mach-O_File_Format.pdf) （最后更新日期是 2009-02-04）。
 
 Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态，[2021-04-13，GitHub 中的 .md 文件已自带目录](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/))
 
@@ -51,9 +54,9 @@ Preamble: I couldn't find this anywhere on Apple's developer documentation websi
     - [Relocation Data Structures](#relocation-data-structures)
       - [`relocation_info`](#relocation_info)
       - [`scattered_relocation_info`](#scattered_relocation_info)
-  - [Universal Binaries and 32-bit/64-bit PowerPC Binaries](#universal-binaries-and-32-bit64-bit-powerpc-binaries)
-    - [`fat_header`](#fat_header)
-    - [`fat_arch`](#fat_arch)
+    - [Universal Binaries and 32-bit/64-bit PowerPC Binaries](#universal-binaries-and-32-bit64-bit-powerpc-binaries)
+      - [`fat_header`](#fat_header)
+      - [`fat_arch`](#fat_arch)
 
 ## Overview
 
@@ -2358,7 +2361,7 @@ Mach-O relocation data structures support two types of relocatable expressions i
 - *Symbol address + constant*. The most typical form of relocation is referencing a symbol’s address with no constant added. In this case, the value of the constant expression is 0.
 - *Address of section y – address of section x + constant*. The section difference form of relocation. This form of relocation supports position-independent code.
 
-## Universal Binaries and 32-bit/64-bit PowerPC Binaries
+### Universal Binaries and 32-bit/64-bit PowerPC Binaries
 
 The standard development tools accept as parameters two kinds of binaries:
 
@@ -2371,7 +2374,7 @@ Each object file is stored as a continuous set of bytes at an offset from the be
 
 A binary that contains code for more than one architecture always begins with a `fat_header` data structure, followed by two `fat_arch` data structures and the actual data for the architectures contained in the file. All data in these data structures is stored in big-endian byte order.
 
-### `fat_header`
+#### `fat_header`
 
 Defines the layout of a binary that contains code for more than one architecture. Declared in the header `/usr/include/mach-o/fat.h`.
 
@@ -2396,7 +2399,7 @@ An integer containing the value 0xCAFEBABE in big-endian byte order format. On a
 
 The fat_header data structure is placed at the start of a binary that contains code for multiple architectures. Directly following the fat_header data structure is a set of `fat_arch` data structures, one for each architecture included in the binary. Regardless of the content this data structure describes, all its fields are stored in big-endian byte order.
 
-### `fat_arch`
+#### `fat_arch`
 
 Describes the location within the binary of an object file targeted at a single architecture. Declared in `/usr/include/mach-o/fat.h`.
 
