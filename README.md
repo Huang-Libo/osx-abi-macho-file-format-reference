@@ -3,7 +3,9 @@
 **Fork 说明**：
 
 - 为 Markdown 文档添加了目录、优化了文本和代码的格式，方便阅读。
-- Apple 文档：[Mach-O_File_Format.pdf](Mach-O_File_Format.pdf) （最后更新日期是 2009-02-04）。
+- Apple 文档（全网为数不多的两份关于 Mach-O 官方文档 😂 ）：
+  - [Mach-O_File_Format.pdf](Mach-O_File_Format.pdf) （最后更新日期是 2009-02-04 ，内容有点陈旧，还有些内容是以过时的 PowerPC 为例来介绍的 😓 ）。
+  - [Mach-O Programming Topics](https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/MachOTopics/0-Introduction/introduction.html#//apple_ref/doc/uid/TP40001827-SW1) (这份在线文档的最后更新日期也是 2009-02-04 🥲 )
 
 Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态，[2021-04-13，GitHub 中的 .md 文件已自带目录](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/))
 
