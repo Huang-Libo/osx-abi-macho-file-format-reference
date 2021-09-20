@@ -5,14 +5,14 @@
 Preamble: I couldn't find this anywhere on Apple's developer documentation website, so I've copied it here for my own benefit. ~~If you are going to use this page, I highly recommend the [Github Table of Contents](https://github.com/arthurhammer/github-toc) web browser extension.~~ (本文作者推荐的工具已处于无人维护的状态，[2021-04-13，GitHub 中的 .md 文件已自带目录](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/))
 
 - [OS X ABI Mach-O File Format Reference](#os-x-abi-mach-o-file-format-reference)
-  - [Introduction](#introduction)
-  - [Basic Structure](#basic-structure)
-  - [Header Structure and Load Commands](#header-structure-and-load-commands)
-  - [Segments](#segments)
-  - [Sections](#sections)
-    - [Table 1: The sections of a `__TEXT` segment](#table-1-the-sections-of-a__textsegment)
-    - [Table 2: The sections of a `__DATA` segment](#table-2-the-sections-of-a__datasegment)
-    - [Table 3: The sections of a `__IMPORT` segment](#table-3-the-sections-of-a__importsegment)
+  - [Overview](#overview)
+    - [Basic Structure](#basic-structure)
+    - [Header Structure and Load Commands](#header-structure-and-load-commands)
+    - [Segments](#segments)
+    - [Sections](#sections)
+      - [Table 1: The sections of a `__TEXT` segment](#table-1-the-sections-of-a__textsegment)
+      - [Table 2: The sections of a `__DATA` segment](#table-2-the-sections-of-a__datasegment)
+      - [Table 3: The sections of a `__IMPORT` segment](#table-3-the-sections-of-a__importsegment)
   - [Data Types](#data-types)
     - [Header Data Structure](#header-data-structure)
       - [`mach_header`](#mach_header)
@@ -55,13 +55,13 @@ Preamble: I couldn't find this anywhere on Apple's developer documentation websi
     - [`fat_header`](#fat_header)
     - [`fat_arch`](#fat_arch)
 
-## Introduction
+## Overview
 
 This document describes the structure of the Mach-O (Mach object) file format, which is the standard used to store programs and libraries on disk in the Mac app binary interface (ABI). To understand how the Xcode tools work with Mach-O files, and to perform low-level debugging tasks, you need to understand this information.
 
 The Mach-O file format provides both intermediate (during the build process) and final (after linking the final product) storage of machine code and data. It was designed as a flexible replacement for the BSD `a.out` format, to be used by the compiler and the static linker and to contain statically linked executable code at runtime. Features for dynamic linking were added as the goals of OS X evolved, resulting in a single file format for both statically linked and dynamically linked code.
 
-## Basic Structure
+### Basic Structure
 
 A Mach-O file contains three major regions (as shown in Figure 1):
 
@@ -78,7 +78,7 @@ Various tables within a Mach-O file refer to sections by number. Section numberi
 
 When using the Stabs debugging format, the symbol table also holds debugging information. When using DWARF, debugging information is stored in the image’s corresponding dSYM file, specified by the `uuid_command` structure.
 
-## Header Structure and Load Commands
+### Header Structure and Load Commands
 
 A Mach-O file contains code and data for one architecture. The header structure of a Mach-O file specifies the target architecture, which allows the kernel to ensure that, for example, code intended for PowerPC-based Macintosh computers is not executed on Intel-based Macintosh computers.
 
@@ -88,7 +88,7 @@ Binaries that contain object files for more than one architecture are not Mach-O
 
 Segments and sections are normally accessed by name. Segments, by convention, are named using all uppercase letters preceded by two underscores (for example, `__TEXT`); sections should be named using all lowercase letters preceded by two underscores (for example, `__text`). This naming convention is standard, although not required for the tools to operate correctly.
 
-## Segments
+### Segments
 
 A segment defines a range of bytes in a Mach-O file and the addresses and memory protection attributes at which those bytes are mapped into virtual memory when the dynamic linker loads the application. As such, segments are always virtual memory page aligned. A segment contains zero or more sections.
 
@@ -111,11 +111,11 @@ These are the segments the standard OS X development tools (contained in the Xco
 - The `__IMPORT` segment contains symbol stubs and non-lazy pointers to symbols not defined in the executable. This segment is generated only for executables targeted for the IA-32 architecture.
 - The `__LINKEDIT` segment contains raw data used by the dynamic linker, such as symbol, string, and relocation table entries.
 
-## Sections
+### Sections
 
 The `__TEXT` and `__DATA` segments may contain a number of standard sections, listed in Table 1, Table 2, and Table 3. The `__OBJC` segment contains a number of sections that are private to the Objective-C compiler. Note that the static linker and file analysis tools use the section type and attributes (instead of the section name) to determine how they should treat the section. The section name, type and attributes are explained further in the description of the `section` data type.
 
-### Table 1: The sections of a `__TEXT` segment
+#### Table 1: The sections of a `__TEXT` segment
 
 | Segment and section name  | Contents                                 |
 | ------------------------- | ---------------------------------------- |
@@ -127,7 +127,7 @@ The `__TEXT` and `__DATA` segments may contain a number of standard sections
 | `__TEXT,__literal4`       | 4-byte literal values. The compiler places single-precision floating point constants in this section. The static linker coalesces these values, removing duplicates, when building the final product. With some architectures, it’s more efficient for the compiler to use immediate load instructions rather than adding to this section. |
 | `__TEXT,__literal8`       | 8-byte literal values. The compiler places double-precision floating point constants in this section. The static linker coalesces these values, removing duplicates, when building the final product. With some architectures, it’s more efficient for the compiler to use immediate load instructions rather than adding to this section. |
 
-### Table 2: The sections of a `__DATA` segment
+#### Table 2: The sections of a `__DATA` segment
 
 | Segment and section name | Contents                                 |
 | ------------------------ | ---------------------------------------- |
@@ -141,7 +141,7 @@ The `__TEXT` and `__DATA` segments may contain a number of standard sections
 | `__DATA,__bss`           | Data for uninitialized static variables (for example, `static int i;`). |
 | `__DATA,__common`        | Uninitialized imported symbol definitions (for example, `int i;`) located in the global scope (outside of a function declaration). |
 
-### Table 3: The sections of a `__IMPORT` segment
+#### Table 3: The sections of a `__IMPORT` segment
 
 | Segment and section name | Contents                                 |
 | ------------------------ | ---------------------------------------- |
